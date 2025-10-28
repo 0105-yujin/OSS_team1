@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+
+int times(int a, int b);
+
 int main(void)
 {
   int num1, num2, result = 0;
@@ -58,4 +61,8 @@ int main(void)
       printf("결과 : %d %c %d = %d\n\n", num1, op, num2, result);
     }
   return 0;
+}
+
+int times(int a,int b){
+ return a*b;
 }
