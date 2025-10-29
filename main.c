@@ -10,7 +10,7 @@ int divide(int a, int b);
 int main(void)
 {
   int num1, num2, result = 0;
-  char = op;
+  char op;
 
   printf("사칙연산 계산기\n");
   printf("입력 예시 : 3 + 4 \n");
