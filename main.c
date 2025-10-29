@@ -44,10 +44,13 @@ int main(void)
         {
           case '+':
             result = plus(num1,num2);
+          break;
           case '-':
             result = minus(num1,num2);
+          break;
           case '*':
             result = times(num1,num2);
+          break;
           case '/':
           
             if (num2 == 0)
