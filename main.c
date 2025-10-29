@@ -3,6 +3,7 @@
 
 
 int times(int a, int b);
+int plus(int a, int b);
 
 int main(void)
 {
@@ -62,7 +63,10 @@ int main(void)
     }
   return 0;
 }
-
+int plus(int a, int b)
+{
+    return a + b;
+}
 int times(int a,int b){
  return a*b;
 }
