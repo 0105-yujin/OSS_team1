@@ -48,7 +48,7 @@ int main(void)
           case '*':
             result = times(num1,num2);
           case '/':
-            result = divide(num1,num2);
+          
             if (num2 == 0)
             {
               printf("지원하지 않는 입력 값\n\n");
