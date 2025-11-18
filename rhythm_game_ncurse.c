@@ -239,7 +239,7 @@ int main() {
         maxCombo = combo;
     }
     
-    bool isPass = (score >= 400); 
+    bool isPass = (score >= 150); 
 
     printf("최종 점수: %d\n", score);
     printf("최대 콤보: %d\n", maxCombo);
