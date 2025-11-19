@@ -1,11 +1,10 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
 
-// --- 색상 상수 ---
 #define COLOR_BLACK 0
 #define COLOR_BLUE 1
 #define COLOR_GREEN 2
@@ -15,7 +14,6 @@
 #define COLOR_YELLOW 6
 #define COLOR_WHITE 7
 
-// --- 함수 선언 ---
 void InitUI();
 void Gotoxy(int x, int y);
 void SetColor(int textColor, int bgColor);
@@ -27,18 +25,15 @@ void PrintCenter(int y, char* text);
 int PlayRhythmGame();
 int PlaySequenceGame();
 
-// --- 메인 함수 ---
 int main() {
-    // chcp 명령어 삭제 (기본 설정 유지)
-
     system("cls");
     InitUI();
 
     while (1) {
-        DrawLayout("NOVA APERIO", "Escape Room Project");
-        PrintCenter(10, "1. GAME START");
-        PrintCenter(12, "2. EXIT");
-        UpdateStatusBar("Select Number", "Team Nova");
+        DrawLayout("노바 아페리오", "방탈출 프로젝트");
+        PrintCenter(10, "1. 게임 시작");
+        PrintCenter(12, "2. 종료");
+        UpdateStatusBar("번호를 선택하세요", "팀 노바");
 
         char choice = _getch();
 
@@ -46,35 +41,32 @@ int main() {
             break;
         }
         else if (choice == '1') {
-            DrawLayout("PROLOGUE", "Press Any Key...");
-            PrintCenter(10, "You wake up in a locked room...");
-            PrintCenter(12, "Find the clues to escape.");
+            DrawLayout("프롤로그", "아무 키나 누르세요...");
+            PrintCenter(10, "당신은 잠긴 방에서 깨어납니다...");
+            PrintCenter(12, "단서를 찾아 탈출하세요.");
             _getch();
 
-            // 리듬 게임 실행
             int result2 = PlayRhythmGame();
 
-            // 리듬 게임 종료 후 화면 정리
             InitUI();
 
             if (result2 == 0) {
-                ShowPopup("FAILED", "You failed the Rhythm Game.");
+                ShowPopup("실패", "리듬 게임에 실패했습니다.");
                 continue;
             }
-            ShowPopup("STAGE CLEAR", "Clue Found: [ 3 ]");
+            ShowPopup("스테이지 클리어", "단서 발견: [ 3 ]");
 
-            // 순서 게임 실행
             int result3 = PlaySequenceGame();
 
-            InitUI(); // 게임 후 화면 정리
+            InitUI();
 
             if (result3 == 0) {
-                ShowPopup("FAILED", "You ran out of tries.");
+                ShowPopup("실패", "시도 횟수를 모두 소진했습니다.");
                 continue;
             }
-            ShowPopup("STAGE CLEAR", "Clue Found: [ 9 ]");
+            ShowPopup("스테이지 클리어", "단서 발견: [ 9 ]");
 
-            DrawLayout("THE END", "More stages coming soon...");
+            DrawLayout("게임 종료", "더 많은 스테이지가 곧 공개됩니다...");
             _getch();
         }
     }
@@ -84,15 +76,13 @@ int main() {
     return 0;
 }
 
-// --- 기본 UI 함수 ---
-
 void InitUI() {
     CONSOLE_CURSOR_INFO cursorInfo;
     cursorInfo.dwSize = 1;
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
 
-    SetConsoleTitle("NOVA APERIO: Escape Room");
+    SetConsoleTitle("노바 아페리오: 방탈출 게임");
     system("mode con: cols=80 lines=25");
 }
 
@@ -123,7 +113,7 @@ void DrawLayout(char* title, char* subtitle) {
 
     SetColor(COLOR_WHITE, COLOR_BLACK);
     Gotoxy(2, 1);
-    printf("[ NOVA APERIO System ]");
+    printf("[ 노바 아페리오 시스템 ]");
 
     PrintCenter(2, title);
 
@@ -188,8 +178,8 @@ void ShowPopup(char* title, char* message) {
     Gotoxy(startX + (width - msgLen) / 2, startY + 4);
     printf("%s", message);
 
-    Gotoxy(startX + (width - 20) / 2, startY + 8);
-    printf("Press Any Key...");
+    Gotoxy(startX + (width - 18) / 2, startY + 8);
+    printf("아무 키나 누르세요...");
 
     _getch();
 
@@ -205,44 +195,35 @@ void PrintCenter(int y, char* text) {
     printf("%s", text);
 }
 
-// ============================================================================
-// [새로 작성된 리듬 게임] - 복잡한 버퍼링 제거, Gotoxy 방식 사용
-// ============================================================================
-
 #define R_LANE_START_X 10
 #define R_LANE_WIDTH 6
 #define R_JUDGE_LINE_Y 20
-#define R_SPEED_DIVIDER 100 // 떨어지는 속도 조절
+#define R_SPEED_DIVIDER 100
 
 typedef struct {
-    long targetTime; // 판정선에 닿아야 하는 시간
-    int line;        // 0:D, 1:F, 2:J, 3:K
-    int judged;      // 판정 여부
-    int prevY;       // 이전 프레임의 Y 위치 (지우기 용도)
+    long targetTime;
+    int line;
+    int judged;
+    int prevY;
 } Note;
 
-// 시간 측정 함수
 long GetTick() {
     return (long)clock();
 }
 
-// 리듬 게임 메인
 int PlayRhythmGame() {
-    system("cls"); // 화면 깨끗하게
+    system("cls");
 
-    // 1. 노트 데이터 설정 (시간, 라인)
     Note notes[] = {
         {2000, 0, 0, -1}, {3000, 1, 0, -1}, {4000, 2, 0, -1}, {5000, 3, 0, -1},
         {6000, 0, 0, -1}, {6500, 1, 0, -1}, {7000, 0, 0, -1}, {7500, 3, 0, -1}
     };
     int noteCount = sizeof(notes) / sizeof(Note);
 
-    // 2. UI 그리기 (정적인 부분)
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintCenter(2, "--- STAGE 2: RHYTHM ---");
-    PrintCenter(4, "KEYS: [D] [F] [J] [K]");
+    PrintCenter(2, "--- 스테이지 2: 리듬 게임 ---");
+    PrintCenter(4, "키 설명: [D] [F] [J] [K]");
 
-    // 레인 그리기
     for (int y = 5; y <= 22; y++) {
         for (int i = 0; i < 4; i++) {
             Gotoxy(R_LANE_START_X + (i * R_LANE_WIDTH), y); printf("|");
@@ -250,7 +231,6 @@ int PlayRhythmGame() {
         }
     }
 
-    // 판정선 그리기
     SetColor(COLOR_YELLOW, COLOR_BLACK);
     Gotoxy(R_LANE_START_X, R_JUDGE_LINE_Y);
     printf("-------------------------");
@@ -261,27 +241,24 @@ int PlayRhythmGame() {
     Gotoxy(R_LANE_START_X + 2 + R_LANE_WIDTH * 2, R_JUDGE_LINE_Y + 1); printf("J");
     Gotoxy(R_LANE_START_X + 2 + R_LANE_WIDTH * 3, R_JUDGE_LINE_Y + 1); printf("K");
 
-    // 카운트다운
     for (int i = 3; i > 0; i--) {
         char buf[10]; sprintf(buf, "%d...", i);
         PrintCenter(10, buf);
         Sleep(1000);
     }
-    PrintCenter(10, "      "); // 지우기
+    PrintCenter(10, "      ");
 
-    // 3. 게임 루프
     long startTime = GetTick();
     int score = 0;
     int combo = 0;
     int maxCombo = 0;
     int gameRunning = 1;
-    char msg[50] = "Ready";
+    char msg[50] = "준비";
 
     while (gameRunning) {
         long currentTime = GetTick() - startTime;
         int allFinished = 1;
 
-        // 입력 처리
         if (_kbhit()) {
             int key = _getch();
             int line = -1;
@@ -292,14 +269,13 @@ int PlayRhythmGame() {
             else if (key == 'q' || key == 'Q') { gameRunning = 0; break; }
 
             if (line != -1) {
-                // 판정 로직
                 int hitIdx = -1;
                 long minDiff = 9999;
 
                 for (int i = 0; i < noteCount; i++) {
                     if (notes[i].line == line && !notes[i].judged) {
                         long diff = abs(currentTime - notes[i].targetTime);
-                        if (diff < 400) { // 0.4초 이내면 판정 범위
+                        if (diff < 400) {
                             if (diff < minDiff) {
                                 minDiff = diff;
                                 hitIdx = i;
@@ -311,40 +287,36 @@ int PlayRhythmGame() {
                 if (hitIdx != -1) {
                     notes[hitIdx].judged = 1;
 
-                    // 노트 지우기 (잔상 제거)
                     if (notes[hitIdx].prevY > 0 && notes[hitIdx].prevY < 24) {
                         Gotoxy(R_LANE_START_X + (notes[hitIdx].line * R_LANE_WIDTH) + 2, notes[hitIdx].prevY);
                         printf("  ");
                     }
 
                     if (minDiff < 100) {
-                        score += 100; combo++; strcpy(msg, "PERFECT!");
+                        score += 100; combo++; strcpy(msg, "완벽해요!");
                     }
                     else if (minDiff < 250) {
-                        score += 50; combo++; strcpy(msg, "GOOD    ");
+                        score += 50; combo++; strcpy(msg, "좋아요  ");
                     }
                     else {
-                        combo = 0; strcpy(msg, "BAD     ");
+                        combo = 0; strcpy(msg, "나빠요  ");
                     }
                     if (combo > maxCombo) maxCombo = combo;
                 }
             }
         }
 
-        // 노트 이동 및 그리기
         for (int i = 0; i < noteCount; i++) {
             if (notes[i].judged) continue;
 
             allFinished = 0;
             long diff = notes[i].targetTime - currentTime;
 
-            // 화면 밖(아래)으로 나갔는지 확인 (Miss)
             if (diff < -300) {
                 notes[i].judged = 1;
                 combo = 0;
-                strcpy(msg, "MISS    ");
+                strcpy(msg, "놓침    ");
 
-                // 마지막 위치 지우기
                 if (notes[i].prevY > 0) {
                     Gotoxy(R_LANE_START_X + (notes[i].line * R_LANE_WIDTH) + 2, notes[i].prevY);
                     printf("  ");
@@ -352,47 +324,39 @@ int PlayRhythmGame() {
                 continue;
             }
 
-            // Y 좌표 계산 (판정선 Y - 남은시간비례)
             int y = R_JUDGE_LINE_Y - (int)(diff / R_SPEED_DIVIDER);
 
-            // 화면 그리기 (이전 위치 지우고 새 위치 그림)
             if (y != notes[i].prevY) {
-                // 이전 위치 지우기
                 if (notes[i].prevY >= 5 && notes[i].prevY < 24 && notes[i].prevY != R_JUDGE_LINE_Y) {
                     Gotoxy(R_LANE_START_X + (notes[i].line * R_LANE_WIDTH) + 2, notes[i].prevY);
                     printf("  ");
                 }
 
-                // 새 위치 그리기 (화면 범위 내일 때만)
                 if (y >= 5 && y < 24) {
                     Gotoxy(R_LANE_START_X + (notes[i].line * R_LANE_WIDTH) + 2, y);
                     SetColor(COLOR_CYAN, COLOR_BLACK);
-                    printf("●"); // 노트 모양
+                    printf("●");
                 }
                 notes[i].prevY = y;
             }
         }
 
-        // 점수판 업데이트
         SetColor(COLOR_WHITE, COLOR_BLACK);
-        Gotoxy(50, 10); printf("SCORE : %d  ", score);
-        Gotoxy(50, 12); printf("COMBO : %d  ", combo);
-        Gotoxy(50, 14); printf("%s      ", msg);
+        Gotoxy(50, 10); printf("점수 : %d   ", score);
+        Gotoxy(50, 12); printf("콤보 : %d   ", combo);
+        Gotoxy(50, 14); printf("%s       ", msg);
 
         if (allFinished) {
             Sleep(1000);
             break;
         }
 
-        Sleep(30); // 프레임 조절
+        Sleep(30);
     }
 
     return (score >= 300) ? 1 : 0;
 }
 
-// ============================================================================
-// [기존 순서 게임] - 변경 없음
-// ============================================================================
 int PlaySequenceGame() {
     srand((unsigned int)time(NULL));
 
@@ -416,21 +380,21 @@ int PlaySequenceGame() {
         int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
     }
 
-    DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order.");
-    UpdateStatusBar("Input: 1 2 3 4 5", "Focus on logic");
+    DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
+    UpdateStatusBar("입력: 1 2 3 4 5", "논리에 집중하세요");
 
     int startY = 7;
-    Gotoxy(5, startY - 2); printf("[ HINTS ]");
+    Gotoxy(5, startY - 2); printf("[ 힌트 ]");
 
     for (int k = 0; k < 5; k++) {
         Gotoxy(5, startY + (k * 2));
         printf("%d. ", k + 1);
         switch (order[k]) {
-        case 0: printf("Number %d is at the 1st position.", map[1]); break;
-        case 1: printf("Number %d is immediately before %d.", map[4], map[3]); break;
-        case 2: printf("Number %d comes before %d.", map[3], map[5]); break;
-        case 3: printf("Number %d is immediately before %d.", map[5], map[2]); break;
-        case 4: printf("Number %d comes before %d.", map[1], map[5]); break;
+        case 0: printf("숫자 %d은(는) 첫 번째 위치에 있습니다.", map[1]); break;
+        case 1: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[4], map[3]); break;
+        case 2: printf("숫자 %d은(는) %d 앞에 옵니다.", map[3], map[5]); break;
+        case 3: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[5], map[2]); break;
+        case 4: printf("숫자 %d은(는) %d 앞에 옵니다.", map[1], map[5]); break;
         }
     }
 
@@ -439,27 +403,27 @@ int PlaySequenceGame() {
 
     while (tries > 0) {
         char msg[30];
-        sprintf_s(msg, sizeof(msg), "Tries Left: %d", tries);
-        UpdateStatusBar(msg, "Format: 1 2 3 4 5");
+        sprintf_s(msg, sizeof(msg), "남은 시도: %d", tries);
+        UpdateStatusBar(msg, "형식: 1 2 3 4 5");
 
         Gotoxy(15, 20);
-        printf("Enter Code (e.g. 4 2 3 1 5):                       ");
+        printf("코드 입력 (예: 4 2 3 1 5):                       ");
         Gotoxy(44, 20);
 
         if (scanf_s("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
             while (getchar() != '\n');
-            ShowPopup("ERROR", "Invalid Format!");
-            DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order.");
-            Gotoxy(5, startY - 2); printf("[ HINTS ]");
+            ShowPopup("오류", "잘못된 형식입니다!");
+            DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
+            Gotoxy(5, startY - 2); printf("[ 힌트 ]");
             for (int k = 0; k < 5; k++) {
                 Gotoxy(5, startY + (k * 2));
                 printf("%d. ", k + 1);
                 switch (order[k]) {
-                case 0: printf("Number %d is at the 1st position.", map[1]); break;
-                case 1: printf("Number %d is immediately before %d.", map[4], map[3]); break;
-                case 2: printf("Number %d comes before %d.", map[3], map[5]); break;
-                case 3: printf("Number %d is immediately before %d.", map[5], map[2]); break;
-                case 4: printf("Number %d comes before %d.", map[1], map[5]); break;
+                case 0: printf("숫자 %d은(는) 첫 번째 위치에 있습니다.", map[1]); break;
+                case 1: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[4], map[3]); break;
+                case 2: printf("숫자 %d은(는) %d 앞에 옵니다.", map[3], map[5]); break;
+                case 3: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[5], map[2]); break;
+                case 4: printf("숫자 %d은(는) %d 앞에 옵니다.", map[1], map[5]); break;
                 }
             }
             continue;
@@ -476,18 +440,18 @@ int PlaySequenceGame() {
         }
         else {
             tries--;
-            ShowPopup("WRONG", "Incorrect sequence.");
-            DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order.");
-            Gotoxy(5, startY - 2); printf("[ HINTS ]");
+            ShowPopup("틀림", "잘못된 순서입니다.");
+            DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
+            Gotoxy(5, startY - 2); printf("[ 힌트 ]");
             for (int k = 0; k < 5; k++) {
                 Gotoxy(5, startY + (k * 2));
                 printf("%d. ", k + 1);
                 switch (order[k]) {
-                case 0: printf("Number %d is at the 1st position.", map[1]); break;
-                case 1: printf("Number %d is immediately before %d.", map[4], map[3]); break;
-                case 2: printf("Number %d comes before %d.", map[3], map[5]); break;
-                case 3: printf("Number %d is immediately before %d.", map[5], map[2]); break;
-                case 4: printf("Number %d comes before %d.", map[1], map[5]); break;
+                case 0: printf("숫자 %d은(는) 첫 번째 위치에 있습니다.", map[1]); break;
+                case 1: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[4], map[3]); break;
+                case 2: printf("숫자 %d은(는) %d 앞에 옵니다.", map[3], map[5]); break;
+                case 3: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[5], map[2]); break;
+                case 4: printf("숫자 %d은(는) %d 앞에 옵니다.", map[1], map[5]); break;
                 }
             }
         }
