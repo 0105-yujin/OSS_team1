@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h> // system 함수용
 #include <conio.h>
 #include "interface.h"
 
@@ -108,7 +109,8 @@ void ShowPopup(char* title, char* message) {
     Gotoxy(startX + (width - 20) / 2, startY + 8);
     printf("Press Any Key...");
 
-    getch();
+    // [수정] getch -> _getch
+    _getch();
 
     SetColor(COLOR_WHITE, COLOR_BLACK);
     system("cls"); 

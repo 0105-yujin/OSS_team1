@@ -15,7 +15,7 @@ int PlayRhythmGame() {
     
     for(int i=3; i>0; i--) {
         char countStr[10];
-        sprintf(countStr, "%d", i);
+        sprintf_s(countStr, sizeof(countStr), "%d", i); // [수정] sprintf -> sprintf_s
         PrintCenter(10, countStr);
         Sleep(1000);
     }
@@ -36,8 +36,10 @@ int PlayRhythmGame() {
         
         int hit = 0;
         for(int w=0; w<20; w++) {
-            if (kbhit()) {
-                char key = getch();
+            // [수정] kbhit -> _kbhit
+            if (_kbhit()) {
+                // [수정] getch -> _getch
+                char key = _getch();
                 if (key == ' ') { hit = 1; break; } 
                 if (key == 'q') return 0; 
             }
@@ -54,7 +56,7 @@ int PlayRhythmGame() {
         }
 
         char scoreText[30];
-        sprintf(scoreText, "Score: %d | Combo: %d", score, combo);
+        sprintf_s(scoreText, sizeof(scoreText), "Score: %d | Combo: %d", score, combo); // [수정]
         UpdateStatusBar(scoreText, "Space: HIT");
         Sleep(500);
         Gotoxy(40, 12); printf("   "); 
@@ -65,7 +67,7 @@ int PlayRhythmGame() {
 }
 
 int PlaySequenceGame() {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL)); // [수정] 형변환 경고 방지
 
     int base_seq[5] = { 1, 4, 3, 5, 2 };
     int map[6]; 
@@ -125,14 +127,16 @@ int PlaySequenceGame() {
 
     while (tries > 0) {
         char msg[30];
-        sprintf(msg, "Tries Left: %d", tries);
+        sprintf_s(msg, sizeof(msg), "Tries Left: %d", tries); // [수정]
         UpdateStatusBar(msg, "Format: 1 2 3 4 5");
 
         Gotoxy(15, 20);
         printf("Enter Code (e.g. 4 2 3 1 5):                   "); 
         Gotoxy(44, 20); 
 
-        if (scanf("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
+        // [수정] scanf -> scanf_s (Visual Studio 전용 안전함수)
+        // 주의: scanf_s는 %d만 쓸 때는 똑같이 쓰면 됩니다.
+        if (scanf_s("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
             while (getchar() != '\n'); 
             ShowPopup("ERROR", "Invalid Format!");
             DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order."); 

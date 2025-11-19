@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <conio.h>
+#include <conio.h> // _getch 쓰려면 필요
 #include "interface.h"
 #include "games.h"
 
@@ -12,7 +12,8 @@ int main() {
         PrintCenter(12, "2. EXIT");
         UpdateStatusBar("Select Number", "Team Nova");
 
-        char choice = getch();
+        // [수정] getch -> _getch
+        char choice = _getch();
 
         if (choice == '2') {
             break;
@@ -21,7 +22,9 @@ int main() {
             DrawLayout("PROLOGUE", "Press Any Key...");
             PrintCenter(10, "You wake up in a locked room...");
             PrintCenter(12, "Find the clues to escape.");
-            getch();
+            
+            // [수정] getch -> _getch
+            _getch();
 
             int result2 = PlayRhythmGame();
             if (result2 == 0) {
@@ -38,7 +41,9 @@ int main() {
             ShowPopup("STAGE CLEAR", "Clue Found: [ 9 ]");
 
             DrawLayout("THE END", "More stages coming soon...");
-            getch();
+            
+            // [수정] getch -> _getch
+            _getch();
         }
     }
 
