@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -45,6 +46,9 @@ int main() {
             _getch();
 
             int result2 = PlayRhythmGame();
+            
+            InitUI(); 
+
             if (result2 == 0) {
                 ShowPopup("FAILED", "You failed the Rhythm Game.");
                 continue;
@@ -188,62 +192,188 @@ void PrintCenter(int y, char* text) {
     printf("%s", text);
 }
 
+#define R_PERFECT 150
+#define R_GOOD 250
+#define R_MISS 350
+#define R_LOOKAHEAD 3000
+#define R_JUDGE_Y 20
+#define R_LANE_0_X 10
+#define R_LANE_WIDTH 5
+#define R_SCREEN_W 80
+#define R_SCREEN_H 25
+
+typedef struct {
+    unsigned long time_ms;
+    int line;
+    int judged;
+} R_Note;
+
+HANDLE hRhythmBuf[2];
+int nRhythmIdx = 0;
+
+void InitRhythmScreen() {
+    CONSOLE_CURSOR_INFO cursorInfo;
+    cursorInfo.dwSize = 1;
+    cursorInfo.bVisible = FALSE;
+
+    hRhythmBuf[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+    hRhythmBuf[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+
+    SetConsoleCursorInfo(hRhythmBuf[0], &cursorInfo);
+    SetConsoleCursorInfo(hRhythmBuf[1], &cursorInfo);
+}
+
+void FlipRhythmScreen() {
+    SetConsoleActiveScreenBuffer(hRhythmBuf[nRhythmIdx]);
+    nRhythmIdx = !nRhythmIdx;
+}
+
+void ClearRhythmScreen() {
+    COORD coor = { 0, 0 };
+    DWORD dw;
+    FillConsoleOutputCharacter(hRhythmBuf[nRhythmIdx], ' ', R_SCREEN_W * R_SCREEN_H, coor, &dw);
+}
+
+void WriteRhythmStr(int x, int y, const char* str) {
+    COORD pos = { x, y };
+    DWORD dw;
+    SetConsoleCursorPosition(hRhythmBuf[nRhythmIdx], pos);
+    WriteConsole(hRhythmBuf[nRhythmIdx], str, strlen(str), &dw, NULL);
+}
+
+void WriteRhythmFmt(int x, int y, const char* format, ...) {
+    char buf[256];
+    va_list args;
+    va_start(args, format);
+    vsprintf(buf, format, args);
+    va_end(args);
+    WriteRhythmStr(x, y, buf);
+}
+
+void ReleaseRhythmScreen() {
+    CloseHandle(hRhythmBuf[0]);
+    CloseHandle(hRhythmBuf[1]);
+    SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
+}
+
+unsigned long GetTimeMs(unsigned long start) {
+    return (unsigned long)clock() - start;
+}
+
 int PlayRhythmGame() {
-    DrawLayout("STAGE 2: RHYTHM GAME", "Press Space when '>' meets '<'");
-    UpdateStatusBar("Score: 0", "Space: HIT | Q: Quit");
+    InitRhythmScreen();
+
+    R_Note notes[] = {
+        {2000, 0, 0}, {3000, 1, 0}, {4000, 2, 0}, {5000, 3, 0},
+        {6000, 0, 0}, {6500, 1, 0}, {7000, 0, 0}, {7500, 3, 0}
+    };
+    int noteCount = sizeof(notes) / sizeof(R_Note);
 
     int score = 0;
     int combo = 0;
-    
-    for(int i=3; i>0; i--) {
-        char countStr[10];
-        sprintf_s(countStr, sizeof(countStr), "%d", i);
-        PrintCenter(10, countStr);
-        Sleep(1000);
-    }
-    PrintCenter(10, "START!");
-    Sleep(500);
-    PrintCenter(10, "      "); 
+    int maxCombo = 0;
+    char lastJudge[50] = "Ready...";
 
-    for (int i = 0; i < 10; i++) {
-        for (int x = 10; x < 40; x += 2) {
-            Gotoxy(x, 12); printf(">");      
-            Gotoxy(80-x, 12); printf("<");   
-            Gotoxy(40, 12); printf("[ ]");   
-            Sleep(50);
-            Gotoxy(x, 12); printf(" ");
-            Gotoxy(80-x, 12); printf(" ");
-        }
-        Gotoxy(40, 12); printf("[O]"); 
-        
-        int hit = 0;
-        for(int w=0; w<20; w++) {
-            if (_kbhit()) {
-                char key = _getch();
-                if (key == ' ') { hit = 1; break; } 
-                if (key == 'q') return 0; 
+    WriteRhythmStr(5, 5, "--- STAGE 2: RHYTHM ---");
+    WriteRhythmStr(5, 6, "KEYS: [d] [f] [j] [k]");
+    WriteRhythmStr(5, 8, "STARTING IN 3 SEC...");
+    FlipRhythmScreen();
+    Sleep(3000);
+
+    unsigned long startTime = (unsigned long)clock();
+    int gameRunning = 1;
+
+    while (gameRunning) {
+        ClearRhythmScreen();
+        unsigned long current = GetTimeMs(startTime);
+
+        if (_kbhit()) {
+            int ch = _getch();
+            int line = -1;
+            if (ch == 'd' || ch == 'D') line = 0;
+            else if (ch == 'f' || ch == 'F') line = 1;
+            else if (ch == 'j' || ch == 'J') line = 2;
+            else if (ch == 'k' || ch == 'K') line = 3;
+            else if (ch == 'q' || ch == 'Q') { gameRunning = 0; break; }
+
+            if (line != -1) {
+                int bestIdx = -1;
+                unsigned long minDiff = 10000;
+
+                for (int i = 0; i < noteCount; i++) {
+                    if (notes[i].line == line && !notes[i].judged) {
+                        unsigned long diff = (current > notes[i].time_ms) ? (current - notes[i].time_ms) : (notes[i].time_ms - current);
+                        if (diff <= R_MISS && diff < minDiff) {
+                            minDiff = diff;
+                            bestIdx = i;
+                        }
+                    }
+                }
+
+                if (bestIdx != -1) {
+                    notes[bestIdx].judged = 1;
+                    if (minDiff <= R_PERFECT) {
+                        score += 100; combo++;
+                        sprintf(lastJudge, "PERFECT! (%dms)", (int)minDiff);
+                    } else if (minDiff <= R_GOOD) {
+                        score += 50; combo++;
+                        sprintf(lastJudge, "GOOD (%dms)", (int)minDiff);
+                    } else {
+                        combo = 0;
+                        sprintf(lastJudge, "MISS (%dms)", (int)minDiff);
+                    }
+                    if (combo > maxCombo) maxCombo = combo;
+                }
             }
-            Sleep(10);
         }
 
-        if (hit) {
-            score += 100;
-            combo++;
-            UpdateStatusBar("HIT!", "NICE TIMING!");
-        } else {
-            combo = 0;
-            UpdateStatusBar("MISS...", "Focus!");
+        int unjudgedCount = 0;
+        for (int i = 0; i < noteCount; i++) {
+            if (!notes[i].judged) {
+                unjudgedCount++;
+                if (current > notes[i].time_ms + R_MISS) {
+                    notes[i].judged = 1;
+                    combo = 0;
+                    sprintf(lastJudge, "MISS (Timeout)");
+                }
+            }
         }
 
-        char scoreText[30];
-        sprintf_s(scoreText, sizeof(scoreText), "Score: %d | Combo: %d", score, combo);
-        UpdateStatusBar(scoreText, "Space: HIT");
-        Sleep(500);
-        Gotoxy(40, 12); printf("   "); 
+        WriteRhythmStr(R_LANE_0_X - 2, R_JUDGE_Y, "[d]");
+        WriteRhythmStr(R_LANE_0_X + R_LANE_WIDTH - 2, R_JUDGE_Y, "[f]");
+        WriteRhythmStr(R_LANE_0_X + R_LANE_WIDTH * 2 - 2, R_JUDGE_Y, "[j]");
+        WriteRhythmStr(R_LANE_0_X + R_LANE_WIDTH * 3 - 2, R_JUDGE_Y, "[k]");
+        
+        for (int x = 0; x < 40; x++) WriteRhythmStr(x, R_JUDGE_Y + 1, "-");
+
+        for (int i = 0; i < noteCount; i++) {
+            if (notes[i].judged) continue;
+            long diff = (long)notes[i].time_ms - (long)current;
+            if (diff < R_LOOKAHEAD && diff > -R_MISS) {
+                double percent = 1.0 - ((double)diff / R_LOOKAHEAD);
+                int y = (int)(percent * R_JUDGE_Y);
+                int x = R_LANE_0_X + notes[i].line * R_LANE_WIDTH - 2;
+                if (y >= 0 && y <= R_JUDGE_Y) WriteRhythmStr(x, y, " O ");
+            }
+        }
+
+        WriteRhythmFmt(40, 2, "Score: %d", score);
+        WriteRhythmFmt(40, 3, "Combo: %d (Max: %d)", combo, maxCombo);
+        WriteRhythmStr(40, 5, "Judgment:");
+        WriteRhythmStr(40, 6, lastJudge);
+        
+        FlipRhythmScreen(); 
+
+        if (unjudgedCount == 0) {
+            Sleep(1500);
+            gameRunning = 0;
+        }
+        Sleep(10); 
     }
 
-    if (score >= 500) return 1;
-    else return 0;
+    ReleaseRhythmScreen(); 
+
+    return (score >= 200) ? 1 : 0;
 }
 
 int PlaySequenceGame() {
@@ -303,7 +433,6 @@ int PlaySequenceGame() {
             while (getchar() != '\n');
             ShowPopup("ERROR", "Invalid Format!");
             DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order.");
-            
             Gotoxy(5, startY - 2); printf("[ HINTS ]");
             for (int k = 0; k < 5; k++) {
                 Gotoxy(5, startY + (k * 2)); 
