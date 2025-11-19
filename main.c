@@ -1,86 +1,47 @@
 #include <stdio.h>
-#include <string.h>
+#include <conio.h>
+#include "interface.h"
+#include "games.h"
 
+int main() {
+    InitUI();
 
-int times(int a, int b);
-int minus(int a, int b);
-int plus(int a, int b);
-int divide(int a, int b);
+    while (1) {
+        DrawLayout("NOVA APERIO", "Escape Room Project");
+        PrintCenter(10, "1. GAME START");
+        PrintCenter(12, "2. EXIT");
+        UpdateStatusBar("Select Number", "Team Nova");
 
-int main(void)
-{
-  int num1, num2, result = 0;
-  char op;
+        char choice = getch();
 
-  printf("사칙연산 계산기\n");
-  printf("입력 예시 : 3 + 4 \n");
-
-  while(1)
-    {
-      printf("입력(종료는 q입력) : ");
-
-      char line[100];
-      if(fgets(line, sizeof(line), stdin) == NULL)
-      {
-        puts("입력 종료");
-        return 0;
-      }
-
-      line[strcspn(line, "\r\n")] == '\0';
-
-      if(line[0] == 'q' || line[0] == 'Q')
-      {
-        return 0;
-      }
-
-      int parsed = sscanf(line, " %d %c %d", &num1, &op, &num2);
-      if(parsed != 3)
-      {
-        printf("입력 형식 오류\n\n");
-        continue;
-      }
-
-      switch(op)
-        {
-          case '+':
-            result = plus(num1,num2);
-          break;
-          case '-':
-            result = minus(num1,num2);
-          break;
-          case '*':
-            result = times(num1,num2);
-          break;
-          case '/':
-          
-            if (num2 == 0)
-            {
-              printf("지원하지 않는 입력 값\n\n");
-              continue;
-            }
-            result = divide(num1,num2);
+        if (choice == '2') {
             break;
-          default:
-            printf("지원하지 않는 연산자\n",op);
-            printf("\n");
-            continue;
         }
-      printf("결과 : %d %c %d = %d\n\n", num1, op, num2, result);
+        else if (choice == '1') {
+            DrawLayout("PROLOGUE", "Press Any Key...");
+            PrintCenter(10, "You wake up in a locked room...");
+            PrintCenter(12, "Find the clues to escape.");
+            getch();
+
+            int result2 = PlayRhythmGame();
+            if (result2 == 0) {
+                ShowPopup("FAILED", "You failed the Rhythm Game.");
+                continue;
+            }
+            ShowPopup("STAGE CLEAR", "Clue Found: [ 3 ]");
+
+            int result3 = PlaySequenceGame();
+            if (result3 == 0) {
+                ShowPopup("FAILED", "You ran out of tries.");
+                continue;
+            }
+            ShowPopup("STAGE CLEAR", "Clue Found: [ 9 ]");
+
+            DrawLayout("THE END", "More stages coming soon...");
+            getch();
+        }
     }
-  return 0;
-}
-int plus(int a, int b)
-{
-    return a + b;
-}
-int times(int a,int b){
- return a*b;
-}
-int minus(int a, int b)
-{
-  return a-b;
-}
-int divide(int a, int b)
-{
-    return a / b;
+
+    CloseUI();
+    return 0;
 }
