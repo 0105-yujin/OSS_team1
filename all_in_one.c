@@ -26,6 +26,9 @@ int PlayRhythmGame();
 int PlaySequenceGame();
 
 int main() {
+    system("chcp 65001"); 
+    system("cls"); 
+
     InitUI();
 
     while (1) {
@@ -94,7 +97,7 @@ void SetColor(int textColor, int bgColor) {
 }
 
 void DrawLayout(char* title, char* subtitle) {
-    system("cls");
+    system("cls"); 
 
     SetColor(COLOR_GREEN, COLOR_BLACK);
     
@@ -218,6 +221,14 @@ void InitRhythmScreen() {
 
     hRhythmBuf[0] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
     hRhythmBuf[1] = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+
+    COORD size = { 80, 25 };
+    SMALL_RECT rect = { 0, 0, 79, 24 };
+
+    SetConsoleScreenBufferSize(hRhythmBuf[0], size);
+    SetConsoleWindowInfo(hRhythmBuf[0], TRUE, &rect);
+    SetConsoleScreenBufferSize(hRhythmBuf[1], size);
+    SetConsoleWindowInfo(hRhythmBuf[1], TRUE, &rect);
 
     SetConsoleCursorInfo(hRhythmBuf[0], &cursorInfo);
     SetConsoleCursorInfo(hRhythmBuf[1], &cursorInfo);
@@ -454,8 +465,9 @@ int PlaySequenceGame() {
             if (input[i] != answer[i]) { correct = 0; break; }
         }
 
-        if (correct) return 1;
-        else {
+        if (correct) {
+            return 1; 
+        } else {
             tries--;
             ShowPopup("WRONG", "Incorrect sequence.");
             DrawLayout("STAGE 3: LOGIC PUZZLE", "Analyze hints and find the order.");
