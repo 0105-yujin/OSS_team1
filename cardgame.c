@@ -53,6 +53,7 @@ void init_cards() //카드 초기화 및 랜덤 배치
 
 void draw_board() //게임판 출력
 {
+  system("cls");
   printf("\n---남은 기회 : %d | 맞춘 짝 : %d/%d ---\n", attempts, score, PAIRS);
   printf("   ");
   for (int j = 0; j < C; j++) printf("  %d ", j+1);
