@@ -53,18 +53,21 @@ void init_cards() //카드 초기화 및 랜덤 배치
 
 void draw_board() //게임판 출력
 {
-  system("cls");
+  system("cls"); //화면 초기화
   printf("\n---남은 기회 : %d | 맞춘 짝 : %d/%d ---\n", attempts, score, PAIRS);
   printf("   ");
-  for (int j = 0; j < C; j++) printf("  %d ", j+1);
+  for (int j = 0; j < C; j++) printf(" %d    ", j+1);
   printf("\n");
   for (int i = 0; i < R; i++)
     {
-      printf("%d ",i+1);
+      printf("%d",i+1);
+      printf("┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐\n");
       for (int j = 0; j < C; j++)
         {
-          printf(" [%c]", matched[i][j] ? card[i][j] : '?');
+          printf(" │ %c │", matched[i][j] ? cards[i][j] : '?');
         }
+      printf("\n");
+      printf(" └───┘ └───┘ └───┘ └───┘ └───┘");
       printf("\n");
     }
   }
