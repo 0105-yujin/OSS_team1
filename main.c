@@ -27,6 +27,7 @@ int PlayCardGame();
 int PlayRhythmGame();
 int PlaySequenceGame();
 int PlayMemoryGame();
+int PlayBossGame();
 
 long GetTick() { return (long)clock(); }
 
@@ -76,7 +77,18 @@ int main() {
                 ShowPopup("실패", "게임 오버 (4단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "모든 테스트를 통과했습니다!");
+            ShowPopup("스테이지 클리어", "네 번째 단서 획득!");
+
+            
+            DrawLayout("최종 스테이지", "보스를 피해 아이템을 모으세요 (q: 중단)");
+            PrintCenter(10, "Stage 5: 추격전 시작");
+            _getch();
+
+            if (PlayBossGame() == 0) {
+                ShowPopup("실패", "게임 오버 (5단계)");
+                continue;
+            }
+            ShowPopup("스테이지 클리어", "보스를 격퇴했습니다!");
 
             DrawLayout("축하합니다!", "모든 스테이지를 완료했습니다.");
             PrintCenter(10, "To Be Continued...");
@@ -100,7 +112,7 @@ void InitUI() {
 }
 
 void Gotoxy(int x, int y) {
-    COORD pos = { x, y };
+    COORD pos = { (SHORT)x, (SHORT)y };
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
@@ -414,4 +426,199 @@ int PlayMemoryGame() {
         }
     }
     return 1;
+}
+
+/* =========================
+   Stage 5: Boss Chase Game
+   ========================= */
+int PlayBossGame() {
+    // 지역 상수 (전역과 이름 충돌 없음)
+    const int BOSS_WIDTH = 80;
+    const int BOSS_HEIGHT = 25;
+    const char* BOSS_WALL_CHAR = "#";
+    const char* BOSS_PLAYER_CHAR = "o";
+    const char* BOSS_ENEMY_CHAR = "X";
+    const char* BOSS_ITEM_CHAR = "$";
+
+    typedef struct { int x, y; } BWall;
+    typedef struct { int x, y; int active; } BItem;
+
+    // 지역 보조 함수들 (Gotoxy/SetColor 재사용)
+    void b_set_cursor(int x, int y) { Gotoxy(x, y); }
+    void b_set_color(int color) { SetColor(color, COLOR_BLACK); }
+
+    int b_is_wall(int x, int y, BWall walls[], int count) {
+        for (int i = 0; i < count; i++) if (x == walls[i].x && y == walls[i].y) return 1;
+        return 0;
+    }
+    void b_draw_walls(BWall walls[], int count) {
+        b_set_color(8);
+        for (int i = 0; i < count; i++) {
+            b_set_cursor(walls[i].x, walls[i].y);
+            printf("%s", BOSS_WALL_CHAR);
+        }
+        b_set_color(COLOR_WHITE);
+    }
+    void b_draw_items(BItem items[], int count) {
+        b_set_color(COLOR_YELLOW);
+        for (int i = 0; i < count; i++) {
+            if (items[i].active) {
+                b_set_cursor(items[i].x, items[i].y);
+                printf("%s", BOSS_ITEM_CHAR);
+            }
+        }
+        b_set_color(COLOR_WHITE);
+    }
+    void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int px, int py, int ex, int ey) {
+        for (int i = 0; i < count; i++) {
+            int x, y, valid;
+            do {
+                valid = 1;
+                x = rand() % BOSS_WIDTH;
+                y = rand() % BOSS_HEIGHT;
+                for (int w = 0; w < wallCount; w++) {
+                    if (walls[w].x == x && walls[w].y == y) { valid = 0; break; }
+                }
+                if ((x == px && y == py) || (x == ex && y == ey)) valid = 0;
+            } while (!valid);
+            items[i].x = x; items[i].y = y; items[i].active = 1;
+        }
+    }
+
+    // 게임 상태 변수
+    int px, py, ex, ey;
+    int ch, round = 1;
+    DWORD lastMoveTime;
+    int baseSpeed = 300;
+    int score = 0;
+    const int rounds_to_win = 2; // 라운드 2회 성공하면 스테이지 클리어
+
+    // walls
+    BWall walls[] = {
+        {10,3},{15,5},{20,8},{35,6},{40,10},{45,15},{60,7},{62,8},{64,9},
+        {25,18},{30,20},{50,22},{12,12},{18,14},{22,16},{70,5},{72,9},{74,12}
+    };
+    int wallCount = sizeof(walls)/sizeof(walls[0]);
+
+    BItem items[3];
+
+    // 숨김 커서
+    HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO ci;
+    GetConsoleCursorInfo(out, &ci);
+    ci.bVisible = FALSE;
+    SetConsoleCursorInfo(out, &ci);
+
+restart_round:
+    system("cls");
+
+    // 초기 위치
+    px = 5; py = 5;
+    ex = 70; ey = 20;
+    score = 0;
+
+    b_reset_items(items, 3, walls, wallCount, px, py, ex, ey);
+    b_draw_walls(walls, wallCount);
+    b_draw_items(items, 3);
+
+    lastMoveTime = GetTickCount();
+    b_set_cursor(px, py); printf("%s", BOSS_PLAYER_CHAR);
+    b_set_cursor(ex, ey); printf("%s", BOSS_ENEMY_CHAR);
+
+    b_set_cursor(0, BOSS_HEIGHT-1);
+    printf("Round %d 시작! 보스 속도: %.2fx\n", round, (1000.0 / baseSpeed));
+
+    while (1) {
+        if (_kbhit()) {
+            ch = _getch();
+            if (ch == 0 || ch == 224) ch = _getch();
+            int nx = px, ny = py;
+            if (ch=='w'||ch=='W'||ch==72) ny--;
+            if (ch=='s'||ch=='S'||ch==80) ny++;
+            if (ch=='a'||ch=='A'||ch==75) nx--;
+            if (ch=='d'||ch=='D'||ch==77) nx++;
+            if (ch=='q'||ch=='Q') {
+                // 중단: 실패로 처리
+                ci.bVisible = TRUE;
+                SetConsoleCursorInfo(out, &ci);
+                return 0;
+            }
+
+            if (nx<0||ny<0||nx>=BOSS_WIDTH||ny>=BOSS_HEIGHT) continue;
+            if (b_is_wall(nx, ny, walls, wallCount)) continue;
+
+            b_set_cursor(px, py); printf(" ");
+            px = nx; py = ny;
+            b_set_cursor(px, py); printf("%s", BOSS_PLAYER_CHAR);
+        }
+
+        // 아이템 획득
+        for (int i=0;i<3;i++) {
+            if (items[i].active && px==items[i].x && py==items[i].y) {
+                items[i].active = 0;
+                b_set_cursor(items[i].x, items[i].y); printf(" ");
+                score++;
+                b_set_cursor(0, BOSS_HEIGHT-1);
+                printf("💰 아이템 획득! (%d / 3)\n", score);
+            }
+        }
+
+        
+        if (GetTickCount() - lastMoveTime > baseSpeed) {
+            int dx=0, dy=0;
+            if (ex < px) dx=1;
+            if (ex > px) dx=-1;
+            if (ey < py) dy=1;
+            if (ey > py) dy=-1;
+
+            int nex = ex + dx;
+            int ney = ey + dy;
+
+            int onItem = 0;
+            for (int i=0;i<3;i++) if (items[i].active && items[i].x==nex && items[i].y==ney) onItem=1;
+
+            if (!b_is_wall(nex, ney, walls, wallCount) && !onItem) {
+                b_set_cursor(ex, ey); printf(" ");
+                ex = nex; ey = ney;
+                b_set_cursor(ex, ey); printf("%s", BOSS_ENEMY_CHAR);
+            }
+
+            lastMoveTime = GetTickCount();
+        }
+
+        
+        if (abs(ex-px)<1 && abs(ey-py)<1) {
+            b_set_cursor(0, BOSS_HEIGHT-1);
+            printf("\n💀 추격자에게 잡혔습니다! 실패...\n");
+            Sleep(1200);
+            ci.bVisible = TRUE;
+            SetConsoleCursorInfo(out, &ci);
+            return 0; 
+        }
+
+        
+        if (score == 3) {
+            round++;
+            if (round > rounds_to_win) {
+                b_set_cursor(0, BOSS_HEIGHT-1);
+                printf("\n🎉 보스전 클리어! 축하합니다.\n");
+                Sleep(1000);
+                ci.bVisible = TRUE;
+                SetConsoleCursorInfo(out, &ci);
+                return 1; 
+            }
+            baseSpeed = (int)(baseSpeed * 0.6);
+            b_set_cursor(0, BOSS_HEIGHT-1);
+            printf("\n🎉 아이템 모두 획득! 다음 라운드 시작...\n");
+            Sleep(1200);
+            goto restart_round;
+        }
+
+        Sleep(10);
+    }
+
+    // unreachable
+    ci.bVisible = TRUE;
+    SetConsoleCursorInfo(out, &ci);
+    return 0;
 }
