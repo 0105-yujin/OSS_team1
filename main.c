@@ -1,10 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
 #include <string.h>
+#include <stdbool.h> // bool 사용을 위해 추가
 
 #define COLOR_BLACK 0
 #define COLOR_BLUE 1
@@ -15,7 +17,13 @@
 #define COLOR_YELLOW 6
 #define COLOR_WHITE 7
 
-// 함수 원형 선언
+// [카드 게임 상수] 2행 5열, 5쌍, 10회 기회
+#define R 2 //행
+#define C 5 //열
+#define PAIRS 5 //짝의 개수
+#define MAX_ATTEMPTS 10
+
+// UI 및 보조 함수 원형 선언 (기존)
 void InitUI();
 void Gotoxy(int x, int y);
 void SetColor(int textColor, int bgColor);
@@ -23,17 +31,24 @@ void DrawLayout(char* title, char* subtitle);
 void UpdateStatusBar(char* leftMsg, char* rightMsg);
 void ShowPopup(char* title, char* message);
 void PrintCenter(int y, char* text);
+long GetTick() { return (long)clock(); }
 
+// [카드 게임 헬퍼 함수 원형] (새로 추가)
+void clear_input_buffer(void);
+void init_cards(char cards[R][C], bool matched[R][C]);
+void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score);
+void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c);
+void wait_for_enter(void);
+
+// 게임 스테이지 함수 원형
 int PlayCardGame();
 int PlayRhythmGame();
 int PlaySequenceGame();
 int PlayMemoryGame();
 int PlayBossGame();
 
-long GetTick() { return (long)clock(); }
-
 int main() {
-    
+
     system("cls");
     InitUI();
     srand((unsigned int)time(NULL));
@@ -57,11 +72,15 @@ int main() {
             PrintCenter(12, "단서를 찾아 탈출하세요.");
             _getch();
 
+            // ===============================================
+            // [스테이지 1] 카드 짝 맞추기 게임
+            // ===============================================
             if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
             ShowPopup("스테이지 클리어", "첫 번째 단서 획득!");
+            // ===============================================
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
@@ -103,6 +122,173 @@ int main() {
     return 0;
 }
 
+// =================================================================
+// [카드 게임 헬퍼 함수 구현]
+// 배열과 상태 변수를 인자로 받도록 수정됨
+// =================================================================
+
+void clear_input_buffer(void)
+{
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF)
+    {
+    }
+}
+
+void init_cards(char cards[R][C], bool matched[R][C]) //카드 초기화 및 랜덤 배치
+{
+    int total = PAIRS * 2;
+    char set[PAIRS * 2];
+    for (int i = 0; i < PAIRS; i++)
+    {
+        set[i * 2] = 'A' + i;
+        set[i * 2 + 1] = 'A' + i;
+    }
+
+    // srand((unsigned)time(NULL)); // main에서 이미 호출됨
+    for (int i = total - 1; i > 0; i--)
+    {
+        int j = rand() % (i + 1);
+        char t = set[i];
+        set[i] = set[j];
+        set[j] = t;
+    }
+
+    for (int i = 0; i < R; i++)
+    {
+        for (int j = 0; j < C; j++)
+        {
+            cards[i][j] = set[i * C + j];
+            matched[i][j] = false;
+        }
+    }
+}
+
+void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score) //게임판 출력
+{
+    system("cls"); //화면 초기화 (전체 화면 덮어쓰기)
+    printf("\n---남은 기회 : %d | 맞춘 짝 : %d/%d ---\n", attempts, score, PAIRS);
+    printf("   ");
+    for (int j = 0; j < C; j++) printf(" %d    ", j + 1);
+    printf("\n");
+    for (int i = 0; i < R; i++)
+    {
+        printf("%d", i + 1);
+        // 행이 2개이므로 ┌───┐를 C개 (5개)만큼 출력합니다.
+        printf("┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐\n");
+        for (int j = 0; j < C; j++)
+        {
+            printf(" │ %c │", matched[i][j] ? cards[i][j] : '?');
+        }
+        printf("\n");
+        printf(" └───┘ └───┘ └───┘ └───┘ └───┘");
+        printf("\n");
+    }
+}
+
+void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c) //좌표 입력 받기
+{
+    int row, col;
+    while (1)
+    {
+        printf("선택 (행 열): ");
+        if (scanf("%d %d", &row, &col) != 2)
+        {
+            clear_input_buffer();
+            printf("유효하지 않은 입력입니다. 숫자 두 개를 입력하세요.\n");
+            continue;
+        }
+        clear_input_buffer();
+        row--; col--;
+        if (row >= 0 && row < R && col >= 0 && col < C && !matched[row][col])
+        {
+            *r = row; *c = col;
+            return;
+        }
+        else
+        {
+            printf("잘못된 위치이거나 이미 맞춘 카드 입니다.\n");
+        }
+    }
+}
+
+void wait_for_enter(void)
+{
+    printf(">> Enter 키를 누르세요.\n");
+    int ch = getchar();
+    if (ch != '\n') clear_input_buffer();
+}
+
+// =================================================================
+// [스테이지 1 함수 구현]
+// =================================================================
+
+int PlayCardGame() {
+    // 게임 상태 변수를 지역 변수로 선언
+    char cards[R][C];
+    bool matched[R][C];
+    int attempts = MAX_ATTEMPTS;
+    int score = 0;
+
+    // 프로젝트 UI 호출 (system("cls")가 포함된 draw_board에 의해 덮어씌워짐)
+    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 카드의 짝을 모두 찾으세요.");
+
+    init_cards(cards, matched);
+    printf("카드 짝맞추기 게임 시작! 기회 %d번. \n", MAX_ATTEMPTS); // 포맷 수정
+
+    while (attempts > 0 && score < PAIRS)
+    {
+        draw_board(cards, matched, attempts, score);
+
+        int r1, c1, r2, c2;
+
+        // 첫 번째 선택
+        get_selection(cards, matched, &r1, &c1);
+        printf("첫 번째 선택된 카드 : %c\n", cards[r1][c1]);
+
+        // 두 번째 선택
+        get_selection(cards, matched, &r2, &c2);
+        while (r1 == r2 && c1 == c2)
+        {
+            printf("같은 카드를 선택했습니다. 다시 선택하세요.\n");
+            get_selection(cards, matched, &r2, &c2);
+        }
+        printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
+
+        // 결과 확인
+        if (cards[r1][c1] == cards[r2][c2])
+        {
+            printf("[성공] 짝을 맞췄습니다!\n");
+            matched[r1][c1] = true;
+            matched[r2][c2] = true;
+            score++;
+        }
+        else
+        {
+            printf("[실패] 짝이 틀렸습니다.\n");
+            attempts--;
+        }
+
+        wait_for_enter();
+    }
+
+    // 결과 표시
+    if (score == PAIRS)
+    {
+        ShowPopup("게임 클리어!", "첫 번째 단서 획득!");
+        return 1;
+    }
+    else
+    {
+        ShowPopup("게임 오버", "스테이지 1 실패...");
+        return 0;
+    }
+}
+
+// =================================================================
+// [기존 프로젝트 UI 및 기타 스테이지 함수] (이하 생략)
+// =================================================================
+
 void InitUI() {
     CONSOLE_CURSOR_INFO cursorInfo;
     cursorInfo.dwSize = 1;
@@ -139,7 +325,7 @@ void DrawLayout(char* title, char* subtitle) {
 
 void UpdateStatusBar(char* leftMsg, char* rightMsg) {
     SetColor(COLOR_WHITE, COLOR_BLACK);
-    Gotoxy(2, 23); printf("                                                                            ");
+    Gotoxy(2, 23); printf("                                                                          ");
     if (leftMsg != NULL) { Gotoxy(2, 23); printf("%s", leftMsg); }
     if (rightMsg != NULL) {
         int len = 0; while (rightMsg[len] != '\0') len++;
@@ -166,56 +352,10 @@ void PrintCenter(int y, char* text) {
     Gotoxy(x, y); printf("%s", text);
 }
 
-int PlayCardGame() {
-    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
+// PlayRhythmGame, PlaySequenceGame, PlayMemoryGame, PlayBossGame 등 나머지 함수들은 
+// 코드 길이를 줄이기 위해 생략합니다. 실제 코드에는 그대로 유지하시면 됩니다.
 
-    int cards[10] = { 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 };
-    int revealed[10] = { 0 };
-    int matches = 0;
-    int tries = 10;
-
-    for (int i = 0; i < 20; i++) {
-        int a = rand() % 10; int b = rand() % 10;
-        int t = cards[a]; cards[a] = cards[b]; cards[b] = t;
-    }
-
-    while (tries > 0 && matches < 3) {
-        char buf[50]; sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
-        UpdateStatusBar(buf, "번호 2개를 입력하세요 (0-9)");
-
-        for (int i = 0; i < 10; i++) {
-            Gotoxy(15 + (i * 5), 10);
-            if (revealed[i]) { SetColor(COLOR_CYAN, COLOR_BLACK); printf("[%d]", cards[i]); }
-            else { SetColor(COLOR_WHITE, COLOR_BLACK); printf("[?]"); }
-            Gotoxy(15 + (i * 5), 11); printf(" %d ", i);
-        }
-        SetColor(COLOR_WHITE, COLOR_BLACK);
-
-        Gotoxy(20, 15); printf("첫 번째 카드 (0-9): ");
-        int first = _getch() - '0';
-        if (first < 0 || first > 9 || revealed[first]) continue;
-        Gotoxy(15 + (first * 5), 10); printf("[%d]", cards[first]);
-
-        Gotoxy(20, 16); printf("두 번째 카드 (0-9): ");
-        int second = _getch() - '0';
-        if (second < 0 || second > 9 || first == second || revealed[second]) continue;
-        Gotoxy(15 + (second * 5), 10); printf("[%d]", cards[second]);
-
-        Sleep(800);
-
-        if (cards[first] == cards[second]) {
-            revealed[first] = 1; revealed[second] = 1;
-            matches++;
-            ShowPopup("성공!", "짝을 찾았습니다.");
-        }
-        else {
-            tries--;
-        }
-        DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
-    }
-    return (matches >= 3) ? 1 : 0;
-}
-
+// PlayRhythmGame 함수 (기존 코드의 나머지 부분)
 #define R_LANE_START_X 10
 #define R_LANE_WIDTH 6
 #define R_JUDGE_LINE_Y 20
@@ -354,7 +494,7 @@ int PlaySequenceGame() {
     int input[5], tries = 3;
     while (tries > 0) {
         char msg[30]; sprintf(msg, "남은 시도: %d", tries); UpdateStatusBar(msg, "형식: 1 2 3 4 5");
-        Gotoxy(15, 20); printf("코드 입력 (예: 4 2 3 1 5):                        "); Gotoxy(44, 20);
+        Gotoxy(15, 20); printf("코드 입력 (예: 4 2 3 1 5):                                  "); Gotoxy(44, 20);
         if (scanf_s("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
             while (getchar() != '\n');
             ShowPopup("오류", "잘못된 형식입니다!");
@@ -433,10 +573,10 @@ int PlayMemoryGame() {
 }
 
 /* =========================
-   Stage 5: Boss Chase Game (오류 수정됨)
-   ========================= */
+    Stage 5: Boss Chase Game (오류 수정됨)
+    ========================= */
 
-   // 구조체 및 상수 전역 정의
+    // 구조체 및 상수 전역 정의
 #define BOSS_WIDTH 80
 #define BOSS_HEIGHT 25
 #define BOSS_WALL_CHAR "#"
