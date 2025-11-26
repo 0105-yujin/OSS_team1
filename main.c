@@ -277,49 +277,112 @@ void PrintCenter(int y, char* text) {
 }
 
 int PlayCardGame() {
-    char cards[R][C];
-    bool matched[R][C];
-    int attempts = MAX_ATTEMPTS;
-    int score = 0;
+    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
 
-    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 카드의 짝을 모두 찾으세요.");
-    init_cards(cards, matched);
-    printf("카드 짝맞추기 게임 시작! 기회 %d번. \n", MAX_ATTEMPTS);
+    int cards[10] = { 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 };
+    int revealed[10] = { 0 }; // 1: 성공, 0: 숨김
+    int matches = 0;
+    int tries = 10;
+    char buf[50];
 
-    while (attempts > 0 && score < PAIRS) {
-        draw_board(cards, matched, attempts, score);
-        int r1, c1, r2, c2;
+    // 카드 섞기
+    for (int i = 0; i < 30; i++) {
+        int a = rand() % 10;
+        int b = rand() % 10;
+        int t = cards[a]; cards[a] = cards[b]; cards[b] = t;
+    }
 
-        get_selection(cards, matched, &r1, &c1);
-        printf("첫 번째 선택된 카드 : %c\n", cards[r1][c1]);
+    while (tries > 0 && matches < 3) {
+        // 상태바 업데이트
+        sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
+        UpdateStatusBar(buf, "번호 2개를 입력하세요 (1-9,0)");
 
-        get_selection(cards, matched, &r2, &c2);
-        while (r1 == r2 && c1 == c2) {
-            printf("같은 카드를 선택했습니다. 다시 선택하세요.\n");
-            get_selection(cards, matched, &r2, &c2);
+        // 카드 출력
+        for (int idx = 0; idx < 10; idx++) {
+            int row = idx / 5;
+            int col = idx % 5;
+            int x = 18 + col * 8;
+            int y = 7 + row * 6;
+
+            SetColor(revealed[idx] ? COLOR_CYAN : COLOR_WHITE, COLOR_BLACK);
+            Gotoxy(x, y); printf("┌───┐");
+            Gotoxy(x, y + 1); printf("│ %c │", revealed[idx] ? '0' + cards[idx] : '?');
+            Gotoxy(x, y + 2); printf("└───┘");
+
+            // 카드 밑 번호: 1~9,0 순서
+            Gotoxy(x + 2, y + 3);
+            printf("%d", (idx + 1) % 10);
         }
-        printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
 
-        if (cards[r1][c1] == cards[r2][c2]) {
-            printf("[성공] 짝을 맞췄습니다!\n");
-            matched[r1][c1] = true;
-            matched[r2][c2] = true;
-            score++;
+        // 첫 번째 카드 선택
+        SetColor(COLOR_WHITE, COLOR_BLACK);
+        Gotoxy(25, 18); printf("첫 번째 카드 (1-9,0): ");
+        char ch1 = _getch();
+        int first = (ch1 == '0') ? 9 : ch1 - '1';
+        if (first < 0 || first > 9 || revealed[first]) continue;
+        revealed[first] = 1;
+
+        // 첫 번째 카드 바로 보여주기
+        int fx = 18 + (first % 5) * 8;
+        int fy = 7 + (first / 5) * 6;
+        Gotoxy(fx, fy + 1); SetColor(COLOR_WHITE, COLOR_BLACK); printf("│ %d │", cards[first]);
+        Gotoxy(25 + 21, 18); printf("%c", ch1); // 입력값 표시
+
+        // 두 번째 카드 선택
+        Gotoxy(25, 19); printf("두 번째 카드 (1-9,0): ");
+        char ch2 = _getch();
+        int second = (ch2 == '0') ? 9 : ch2 - '1';
+        if (second < 0 || second > 9 || first == second || revealed[second]) {
+            revealed[first] = 0; // 잘못 선택 시 첫 번째 카드 숨김
+            continue;
+        }
+        revealed[second] = 1;
+
+        // 두 번째 카드 바로 보여주기
+        int sx = 18 + (second % 5) * 8;
+        int sy = 7 + (second / 5) * 6;
+        Gotoxy(sx, sy + 1); SetColor(COLOR_WHITE, COLOR_BLACK); printf("│ %d │", cards[second]);
+        Gotoxy(fx, fy + 1); printf("│ %d │", cards[first]);
+        Gotoxy(25 + 21, 19); printf("%c", ch2); // 입력값 표시
+
+        Sleep(700); // 잠시 공개
+
+        // 결과 확인
+        if (cards[first] == cards[second]) {
+            matches++;
+            ShowPopup("성공!", "짝을 찾았습니다.");
+
+            // 팝업 후 화면 복구
+            DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
+            sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
+            UpdateStatusBar(buf, "번호 2개를 입력하세요 (1-9,0)");
+
+            for (int idx = 0; idx < 10; idx++) {
+                int row = idx / 5;
+                int col = idx % 5;
+                int x = 18 + col * 8;
+                int y = 7 + row * 6;
+
+                SetColor(revealed[idx] ? COLOR_CYAN : COLOR_WHITE, COLOR_BLACK);
+                Gotoxy(x, y); printf("┌───┐");
+                Gotoxy(x, y + 1); printf("│ %c │", revealed[idx] ? '0' + cards[idx] : '?');
+                Gotoxy(x, y + 2); printf("└───┘");
+                Gotoxy(x + 2, y + 3); printf("%d", (idx + 1) % 10);
+            }
         }
         else {
-            printf("[실패] 짝이 틀렸습니다.\n");
-            attempts--;
+            revealed[first] = revealed[second] = 0;
+            tries--;
         }
-        wait_for_enter();
+
+        // 입력 자리 초기화
+        Gotoxy(25, 18); printf("                         ");
+        Gotoxy(25, 19); printf("                         ");
     }
 
-    if (score == PAIRS) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    return (matches >= 3) ? 1 : 0;
 }
+
 
 #define R_LANE_START_X 10
 #define R_LANE_WIDTH 6
@@ -718,4 +781,5 @@ restart_round:
     SetConsoleCursorInfo(out, &ci);
     return 0;
 }
+
 
