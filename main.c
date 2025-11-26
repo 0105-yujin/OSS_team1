@@ -32,7 +32,7 @@ int PlayBossGame();
 long GetTick() { return (long)clock(); }
 
 int main() {
-    system("chcp 65001"); // 한글 깨짐 방지
+    
     system("cls");
     InitUI();
     srand((unsigned int)time(NULL));
@@ -622,3 +622,4 @@ restart_round:
     SetConsoleCursorInfo(out, &ci);
     return 0;
 }
+
