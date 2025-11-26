@@ -1,4 +1,3 @@
-#pragma execution_character_set("utf-8")
 #include <stdio.h>
 #include <conio.h>
 #include <windows.h>
@@ -73,7 +72,7 @@ void reset_items(Item items[], int count, Wall walls[], int wallCount, int playe
     }
 }
 
-int main(void) {
+int PlayBossGame(void) {
     int x, y, ex, ey;
     int ch, round = 1;
     DWORD lastMoveTime;
