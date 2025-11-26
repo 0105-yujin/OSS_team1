@@ -127,7 +127,7 @@ int main(void)
         }
       printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
 
-      if(cards[r1][c1] == cards[r2][c2]);
+      if(cards[r1][c1] == cards[r2][c2])
       {
         printf("[성공] 짝을 맞췄습니다!\n");
         matched[r1][c1] = true;
