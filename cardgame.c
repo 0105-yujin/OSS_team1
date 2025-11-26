@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define R 4 //행
+#define R 2 //행
 #define C 5 //열
 #define PAIRS 5 //짝의 개수
 #define MAX_ATTEMPTS 10
@@ -123,7 +123,7 @@ int main(void)
       while(r1==r2 && c1== c2)
         {
           printf("같은 카드를 선택했습니다. 다시 선택하세요.\n");
-          gets_selection(&r2,&c2);
+          get_selection(&r2,&c2);
         }
       printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
 
