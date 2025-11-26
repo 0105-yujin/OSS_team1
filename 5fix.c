@@ -45,7 +45,6 @@ int PlayMemoryGame();
 int PlayBossGame();
 
 int main() {
-
     system("cls");
     InitUI();
     srand((unsigned int)time(NULL));
@@ -77,7 +76,7 @@ int main() {
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
             ShowPopup("스테이지 클리어", msgBuf);
 
-            if (PlayBossGame() == 0) {
+            if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
                 continue;
             }
@@ -152,69 +151,6 @@ void clear_input_buffer(void) {
     while ((ch = getchar()) != '\n' && ch != EOF) {}
 }
 
-void init_cards(char cards[R][C], bool matched[R][C]) {
-    int total = PAIRS * 2;
-    char set[PAIRS * 2];
-    for (int i = 0; i < PAIRS; i++) {
-        set[i * 2] = 'A' + i;
-        set[i * 2 + 1] = 'A' + i;
-    }
-    for (int i = total - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        char t = set[i]; set[i] = set[j]; set[j] = t;
-    }
-    for (int i = 0; i < R; i++) {
-        for (int j = 0; j < C; j++) {
-            cards[i][j] = set[i * C + j];
-            matched[i][j] = false;
-        }
-    }
-}
-
-void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score) {
-    system("cls");
-    printf("\n---남은 기회 : %d | 맞춘 짝 : %d/%d ---\n", attempts, score, PAIRS);
-    printf("    ");
-    for (int j = 0; j < C; j++) printf(" %d    ", j + 1);
-    printf("\n");
-    for (int i = 0; i < R; i++) {
-        printf("%d", i + 1);
-        printf("┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐\n");
-        for (int j = 0; j < C; j++) {
-            printf(" │ %c │", matched[i][j] ? cards[i][j] : '?');
-        }
-        printf("\n");
-        printf(" └───┘ └───┘ └───┘ └───┘ └───┘\n");
-    }
-}
-
-void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c) {
-    int row, col;
-    while (1) {
-        printf("선택 (행 열): ");
-        if (scanf("%d %d", &row, &col) != 2) {
-            clear_input_buffer();
-            printf("유효하지 않은 입력입니다.\n");
-            continue;
-        }
-        clear_input_buffer();
-        row--; col--;
-        if (row >= 0 && row < R && col >= 0 && col < C && !matched[row][col]) {
-            *r = row; *c = col;
-            return;
-        }
-        else {
-            printf("잘못된 위치이거나 이미 맞춘 카드 입니다.\n");
-        }
-    }
-}
-
-void wait_for_enter(void) {
-    printf(">> Enter 키를 누르세요.\n");
-    int ch = getchar();
-    if (ch != '\n') clear_input_buffer();
-}
-
 void InitUI() {
     CONSOLE_CURSOR_INFO cursorInfo;
     cursorInfo.dwSize = 1;
@@ -250,7 +186,7 @@ void DrawLayout(char* title, char* subtitle) {
 
 void UpdateStatusBar(char* leftMsg, char* rightMsg) {
     SetColor(COLOR_WHITE, COLOR_BLACK);
-    Gotoxy(2, 23); printf("                                                                                                ");
+    Gotoxy(2, 23); printf("                                                                            ");
     if (leftMsg != NULL) { Gotoxy(2, 23); printf("%s", leftMsg); }
     if (rightMsg != NULL) {
         int len = 0; while (rightMsg[len] != '\0') len++;
@@ -281,12 +217,11 @@ int PlayCardGame() {
     DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
 
     int cards[10] = { 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 };
-    int revealed[10] = { 0 }; // 1: 성공, 0: 숨김
+    int revealed[10] = { 0 }; 
     int matches = 0;
     int tries = 10;
     char buf[50];
 
-    // 카드 섞기
     for (int i = 0; i < 30; i++) {
         int a = rand() % 10;
         int b = rand() % 10;
@@ -294,11 +229,9 @@ int PlayCardGame() {
     }
 
     while (tries > 0 && matches < 3) {
-        // 상태바 업데이트
         sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
         UpdateStatusBar(buf, "번호 2개를 입력하세요 (1-9,0)");
 
-        // 카드 출력
         for (int idx = 0; idx < 10; idx++) {
             int row = idx / 5;
             int col = idx % 5;
@@ -309,13 +242,9 @@ int PlayCardGame() {
             Gotoxy(x, y); printf("┌───┐");
             Gotoxy(x, y + 1); printf("│ %c │", revealed[idx] ? '0' + cards[idx] : '?');
             Gotoxy(x, y + 2); printf("└───┘");
-
-            // 카드 밑 번호: 1~9,0 순서
-            Gotoxy(x + 2, y + 3);
-            printf("%d", (idx + 1) % 10);
+            Gotoxy(x + 2, y + 3); printf("%d", (idx + 1) % 10);
         }
 
-        // 첫 번째 카드 선택
         SetColor(COLOR_WHITE, COLOR_BLACK);
         Gotoxy(25, 18); printf("첫 번째 카드 (1-9,0): ");
         char ch1 = _getch();
@@ -323,37 +252,31 @@ int PlayCardGame() {
         if (first < 0 || first > 9 || revealed[first]) continue;
         revealed[first] = 1;
 
-        // 첫 번째 카드 바로 보여주기
         int fx = 18 + (first % 5) * 8;
         int fy = 7 + (first / 5) * 6;
         Gotoxy(fx, fy + 1); SetColor(COLOR_WHITE, COLOR_BLACK); printf("│ %d │", cards[first]);
-        Gotoxy(25 + 21, 18); printf("%c", ch1); // 입력값 표시
+        Gotoxy(25 + 21, 18); printf("%c", ch1);
 
-        // 두 번째 카드 선택
         Gotoxy(25, 19); printf("두 번째 카드 (1-9,0): ");
         char ch2 = _getch();
         int second = (ch2 == '0') ? 9 : ch2 - '1';
         if (second < 0 || second > 9 || first == second || revealed[second]) {
-            revealed[first] = 0; // 잘못 선택 시 첫 번째 카드 숨김
+            revealed[first] = 0;
             continue;
         }
         revealed[second] = 1;
 
-        // 두 번째 카드 바로 보여주기
         int sx = 18 + (second % 5) * 8;
         int sy = 7 + (second / 5) * 6;
         Gotoxy(sx, sy + 1); SetColor(COLOR_WHITE, COLOR_BLACK); printf("│ %d │", cards[second]);
         Gotoxy(fx, fy + 1); printf("│ %d │", cards[first]);
-        Gotoxy(25 + 21, 19); printf("%c", ch2); // 입력값 표시
+        Gotoxy(25 + 21, 19); printf("%c", ch2);
 
-        Sleep(700); // 잠시 공개
+        Sleep(700);
 
-        // 결과 확인
         if (cards[first] == cards[second]) {
             matches++;
             ShowPopup("성공!", "짝을 찾았습니다.");
-
-            // 팝업 후 화면 복구
             DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
             sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
             UpdateStatusBar(buf, "번호 2개를 입력하세요 (1-9,0)");
@@ -363,7 +286,6 @@ int PlayCardGame() {
                 int col = idx % 5;
                 int x = 18 + col * 8;
                 int y = 7 + row * 6;
-
                 SetColor(revealed[idx] ? COLOR_CYAN : COLOR_WHITE, COLOR_BLACK);
                 Gotoxy(x, y); printf("┌───┐");
                 Gotoxy(x, y + 1); printf("│ %c │", revealed[idx] ? '0' + cards[idx] : '?');
@@ -376,14 +298,12 @@ int PlayCardGame() {
             tries--;
         }
 
-        // 입력 자리 초기화
         Gotoxy(25, 18); printf("                                 ");
         Gotoxy(25, 19); printf("                                 ");
     }
 
     return (matches >= 3) ? 1 : 0;
 }
-
 
 #define R_LANE_START_X 10
 #define R_LANE_WIDTH 6
@@ -523,7 +443,7 @@ int PlaySequenceGame() {
     int input[5], tries = 3;
     while (tries > 0) {
         char msg[30]; sprintf(msg, "남은 시도: %d", tries); UpdateStatusBar(msg, "형식: 1 2 3 4 5");
-        Gotoxy(15, 20); printf("코드 입력 (예: 4 2 3 1 5):                                         "); Gotoxy(44, 20);
+        Gotoxy(15, 20); printf("코드 입력 (예: 4 2 3 1 5):                                 "); Gotoxy(44, 20);
         if (scanf_s("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
             while (getchar() != '\n');
             ShowPopup("오류", "잘못된 형식입니다!");
@@ -601,120 +521,51 @@ int PlayMemoryGame() {
     return 1;
 }
 
-#define B_WIDTH 80
-#define B_HEIGHT 25
-#define B_WALL_CHAR "#"
-#define B_PLAYER_CHAR "o"
-#define B_ENEMY_CHAR "X"
-#define B_ITEM_CHAR "$"
-
-typedef struct { int x, y; } BWall;
-typedef struct { int x, y; int active; } BItem;
-
-void b_set_cursor(int x, int y) { Gotoxy(x, y); }
-void b_set_color(int color) { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color); }
-
-int b_is_wall(int x, int y, BWall walls[], int count) {
-    for (int i = 0; i < count; i++) if (x == walls[i].x && y == walls[i].y) return 1;
-    return 0;
-}
-
-void b_draw_walls(BWall walls[], int count) {
-    b_set_color(8);
-    for (int i = 0; i < count; i++) {
-        b_set_cursor(walls[i].x, walls[i].y);
-        printf("%s", B_WALL_CHAR);
-    }
-    b_set_color(COLOR_WHITE);
-}
-
-void b_draw_items(BItem items[], int count) {
-    b_set_color(14);
-    for (int i = 0; i < count; i++) {
-        if (items[i].active) {
-            b_set_cursor(items[i].x, items[i].y);
-            printf("%s", B_ITEM_CHAR);
-        }
-    }
-    b_set_color(COLOR_WHITE);
-}
-
-void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int px, int py, int ex, int ey) {
-    for (int i = 0; i < count; i++) {
-        int x, y, valid;
-        do {
-            valid = 1;
-            x = rand() % B_WIDTH;
-            y = rand() % B_HEIGHT;
-            for (int w = 0; w < wallCount; w++) {
-                if (walls[w].x == x && walls[w].y == y) { valid = 0; break; }
-            }
-            if ((x == px && y == py) || (x == ex && y == ey)) valid = 0;
-        } while (!valid);
-        items[i].x = x; items[i].y = y; items[i].active = 1;
-    }
-}
-
 int PlayBossGame() {
-    // 마스터 코드 브레이커 게임 (Mastermind 유사)
-    // 목표: 4자리 비밀 코드(1~6, 중복 없음)를 10번 안에 맞추세요.
-
-    // 1. 초기 설정
     int SECRET_CODE[4];
     int attempts = 10;
-    const int max_digits = 6; // 숫자 범위 1~6
+    const int max_digits = 6; 
     const int code_length = 4;
 
-    // 추측 기록을 저장할 정적 구조체
     typedef struct { int guess[4]; int bulls; int cows; } GuessHistory;
     static GuessHistory history[10];
     static int history_count = 0;
 
-    // 새 게임 시작 시 기록 초기화
     if (history_count != 0) history_count = 0;
 
-    // 2. 비밀 코드 생성 (1~6 중 중복 없이 4개)
     int available_digits[] = { 1, 2, 3, 4, 5, 6 };
     for (int i = 0; i < code_length; i++) {
         int idx = rand() % (max_digits - i);
         SECRET_CODE[i] = available_digits[idx];
-        // 사용된 숫자 제거
         for (int j = idx; j < max_digits - i - 1; j++) {
             available_digits[j] = available_digits[j + 1];
         }
     }
 
-    // 3. 게임 루프
     while (attempts > 0) {
         char title[80];
         sprintf(title, "스테이지 5: 마스터 코드 브레이커 (남은 시도: %d)", attempts);
         DrawLayout(title, "4자리 비밀 코드(1~6, 중복 없음)를 10번 안에 맞추세요.");
         UpdateStatusBar("입력: 4자리 숫자 (예: 1234)", "엔터로 제출");
 
-        // 힌트 범례 표시
         SetColor(COLOR_WHITE, COLOR_BLACK);
         Gotoxy(40, 7); printf("힌트:");
         SetColor(COLOR_RED, COLOR_BLACK); Gotoxy(40, 8); printf("●"); SetColor(COLOR_WHITE, COLOR_BLACK); printf(" = 위치/숫자 일치 (Bull)");
         SetColor(COLOR_YELLOW, COLOR_BLACK); Gotoxy(40, 9); printf("○"); SetColor(COLOR_WHITE, COLOR_BLACK); printf(" = 숫자만 일치 (Cow)");
 
-        // 추측 기록 표시
         Gotoxy(5, 7); printf("┌----- 추측 기록 -----┐");
         for (int i = 0; i < history_count; i++) {
             Gotoxy(7, 8 + i);
             SetColor(COLOR_WHITE, COLOR_BLACK);
-            // 추측된 숫자 출력
             for (int k = 0; k < code_length; k++) {
                 printf("%d", history[i].guess[k]);
             }
             printf(" -> ");
 
-            // Bulls (빨간색) 출력
             SetColor(COLOR_RED, COLOR_BLACK);
             for (int k = 0; k < history[i].bulls; k++) printf("●");
-            // Cows (노란색) 출력
             SetColor(COLOR_YELLOW, COLOR_BLACK);
             for (int k = 0; k < history[i].cows; k++) printf("○");
-            // 미사용 힌트 (회색) 출력
             SetColor(8, COLOR_BLACK);
             for (int k = 0; k < code_length - history[i].bulls - history[i].cows; k++) printf("·");
             SetColor(COLOR_WHITE, COLOR_BLACK);
@@ -722,14 +573,12 @@ int PlayBossGame() {
         Gotoxy(5, 8 + history_count); printf("└--------------------┘");
 
 
-        // 4. 입력 받기
-        char input_str[5];
+        char input_str[6]; 
         Gotoxy(5, 20); SetColor(COLOR_CYAN, COLOR_BLACK); printf("당신의 추측 (1-6, 중복 없이): ");
         Gotoxy(5, 21); printf(">> ");
         Gotoxy(8, 21);
         SetColor(COLOR_WHITE, COLOR_BLACK);
 
-        // 4자리 숫자 문자열을 안전하게 읽음
         if (scanf_s("%4s", input_str, 5) != 1) {
             while (getchar() != '\n');
             ShowPopup("오류", "잘못된 형식입니다!");
@@ -737,10 +586,8 @@ int PlayBossGame() {
         }
         while (getchar() != '\n');
 
-        // 5. 입력 검증
         if (strlen(input_str) != code_length) {
             ShowPopup("경고", "코드는 4자리여야 합니다.");
-            attempts--;
             continue;
         }
 
@@ -750,11 +597,9 @@ int PlayBossGame() {
 
         for (int i = 0; i < code_length; i++) {
             int digit = input_str[i] - '0';
-            // 숫자 범위 1~6 확인
             if (digit < 1 || digit > max_digits) {
                 valid_input = false; break;
             }
-            // 중복 확인
             if (unique_check[digit]) {
                 valid_input = false; break;
             }
@@ -764,18 +609,15 @@ int PlayBossGame() {
 
         if (!valid_input) {
             ShowPopup("경고", "유효하지 않은 숫자(1-6)이거나 중복되었습니다.");
-            attempts--;
             continue;
         }
 
-        // 6. 추측 확인 및 힌트 생성
-        int bulls = 0; // 숫자와 위치 모두 일치
-        int cows = 0;  // 숫자만 일치
+        int bulls = 0; 
+        int cows = 0;  
 
         bool secret_matched[4] = { false };
         bool guess_matched[4] = { false };
 
-        // Bulls 확인
         for (int i = 0; i < code_length; i++) {
             if (guess[i] == SECRET_CODE[i]) {
                 bulls++;
@@ -784,7 +626,6 @@ int PlayBossGame() {
             }
         }
 
-        // Cows 확인
         for (int i = 0; i < code_length; i++) {
             if (guess_matched[i]) continue;
             for (int j = 0; j < code_length; j++) {
@@ -797,20 +638,17 @@ int PlayBossGame() {
             }
         }
 
-        // 7. 결과 저장
         for (int i = 0; i < code_length; i++) history[history_count].guess[i] = guess[i];
         history[history_count].bulls = bulls;
         history[history_count].cows = cows;
         history_count++;
 
-        // 8. 승리 조건 확인
         if (bulls == code_length) {
             ShowPopup("성공!", "비밀 코드를 해독했습니다!");
             history_count = 0;
             return 1;
         }
 
-        // 9. 시도 횟수 감소 및 패배 조건 확인
         attempts--;
 
         if (attempts == 0) {
@@ -821,8 +659,8 @@ int PlayBossGame() {
             return 0;
         }
 
-        Sleep(500); // 사용자 입력 전 잠시 대기
+        Sleep(500); 
     }
 
-    return 0; // should not be reached
+    return 0; 
 }
