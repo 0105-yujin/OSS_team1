@@ -45,7 +45,7 @@ int PlayMemoryGame();
 int PlayBossGame();
 
 int main() {
-    system("chcp 65001");
+   
     system("cls");
     InitUI();
     srand((unsigned int)time(NULL));
@@ -718,3 +718,4 @@ restart_round:
     SetConsoleCursorInfo(out, &ci);
     return 0;
 }
+
