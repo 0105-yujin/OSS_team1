@@ -1,12 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <conio.h>
 #include <windows.h>
 #include <string.h>
-#include <stdbool.h> // bool 사용을 위해 추가
+#include <stdbool.h> 
 
 #define COLOR_BLACK 0
 #define COLOR_BLUE 1
@@ -17,13 +16,13 @@
 #define COLOR_YELLOW 6
 #define COLOR_WHITE 7
 
-// [카드 게임 상수] 2행 5열, 5쌍, 10회 기회
-#define R 2 //행
-#define C 5 //열
-#define PAIRS 5 //짝의 개수
+#define R 2 
+#define C 5 
+#define PAIRS 5 
 #define MAX_ATTEMPTS 10
 
-// UI 및 보조 함수 원형 선언 (기존)
+int FINAL_CODE[5] = { 7, 3, 9, 1, 5 };
+
 void InitUI();
 void Gotoxy(int x, int y);
 void SetColor(int textColor, int bgColor);
@@ -33,14 +32,12 @@ void ShowPopup(char* title, char* message);
 void PrintCenter(int y, char* text);
 long GetTick() { return (long)clock(); }
 
-// [카드 게임 헬퍼 함수 원형] (새로 추가)
 void clear_input_buffer(void);
 void init_cards(char cards[R][C], bool matched[R][C]);
 void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score);
 void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c);
 void wait_for_enter(void);
 
-// 게임 스테이지 함수 원형
 int PlayCardGame();
 int PlayRhythmGame();
 int PlaySequenceGame();
@@ -48,15 +45,16 @@ int PlayMemoryGame();
 int PlayBossGame();
 
 int main() {
-
+    system("chcp 65001");
     system("cls");
     InitUI();
     srand((unsigned int)time(NULL));
+    
+    char msgBuf[100];
 
     while (1) {
         DrawLayout(" ESC_ TEAM ", "방탈출 프로젝트");
         PrintCenter(10, "1. 게임 시작");
-
         PrintCenter(12, "2. 종료");
         UpdateStatusBar("번호를 선택하세요", "팀 ESC");
 
@@ -69,51 +67,77 @@ int main() {
 
             DrawLayout("프롤로그", "아무 키나 누르세요...");
             PrintCenter(10, "당신은 잠긴 방에서 깨어납니다...");
-            PrintCenter(12, "단서를 찾아 탈출하세요.");
+            PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
             _getch();
 
-            // ===============================================
-            // [스테이지 1] 카드 짝 맞추기 게임
-            // ===============================================
             if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "첫 번째 단서 획득!");
-            // ===============================================
+            sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "두 번째 단서 획득!");
+            sprintf(msgBuf, "두 번째 단서 획득: [ %d ]", FINAL_CODE[1]);
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlaySequenceGame() == 0) {
                 ShowPopup("실패", "게임 오버 (3단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "세 번째 단서 획득!");
+            sprintf(msgBuf, "세 번째 단서 획득: [ %d ]", FINAL_CODE[2]);
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlayMemoryGame() == 0) {
                 ShowPopup("실패", "게임 오버 (4단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "네 번째 단서 획득!");
-
-
-            DrawLayout("최종 스테이지", "보스를 피해 아이템을 모으세요 (q: 중단)");
-            PrintCenter(10, "Stage 5: 추격전 시작");
-            _getch();
+            sprintf(msgBuf, "네 번째 단서 획득: [ %d ]", FINAL_CODE[3]);
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlayBossGame() == 0) {
                 ShowPopup("실패", "게임 오버 (5단계)");
                 continue;
             }
-            ShowPopup("스테이지 클리어", "보스를 격퇴했습니다!");
+            sprintf(msgBuf, "마지막 단서 획득: [ %d ]", FINAL_CODE[4]);
+            ShowPopup("스테이지 클리어", msgBuf);
 
-            DrawLayout("축하합니다!", "모든 스테이지를 완료했습니다.");
-            PrintCenter(10, "To Be Continued...");
-            _getch();
+            DrawLayout("최종 관문", "도어락 비밀번호를 입력하세요");
+            PrintCenter(8, "획득한 단서를 순서대로 입력하세요.");
+            UpdateStatusBar("5자리 숫자 입력", "엔터 키로 입력");
+            
+            Gotoxy(35, 12);
+            printf("비밀번호: ");
+            
+            int inputCode;
+            if (scanf_s("%d", &inputCode) == 1) {
+                int correctCode = FINAL_CODE[0] * 10000 + 
+                                  FINAL_CODE[1] * 1000 + 
+                                  FINAL_CODE[2] * 100 + 
+                                  FINAL_CODE[3] * 10 +
+                                  FINAL_CODE[4];
+
+                if (inputCode == correctCode) {
+                    ShowPopup("잠금 해제", "철컥! 문이 열립니다...");
+                    
+                    DrawLayout("탈출 성공!", "축하합니다!");
+                    SetColor(COLOR_GREEN, COLOR_BLACK);
+                    PrintCenter(10, "#################################");
+                    PrintCenter(11, "#       MISSION COMPLETE        #");
+                    PrintCenter(12, "#################################");
+                    SetColor(COLOR_WHITE, COLOR_BLACK);
+                    PrintCenter(15, "팀원: 홍유진, 김명동, 김장혁, 이동호, 팽선우");
+                    PrintCenter(17, "플레이해주셔서 감사합니다.");
+                    _getch();
+                } else {
+                    ShowPopup("경고", "비밀번호가 틀렸습니다! 처음으로 돌아갑니다.");
+                }
+            }
+            
+            while(getchar() != '\n');
         }
     }
 
@@ -122,179 +146,79 @@ int main() {
     return 0;
 }
 
-// =================================================================
-// [카드 게임 헬퍼 함수 구현]
-// 배열과 상태 변수를 인자로 받도록 수정됨
-// =================================================================
-
-void clear_input_buffer(void)
-{
+void clear_input_buffer(void) {
     int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF)
-    {
-    }
+    while ((ch = getchar()) != '\n' && ch != EOF) {}
 }
 
-void init_cards(char cards[R][C], bool matched[R][C]) //카드 초기화 및 랜덤 배치
-{
+void init_cards(char cards[R][C], bool matched[R][C]) {
     int total = PAIRS * 2;
     char set[PAIRS * 2];
-    for (int i = 0; i < PAIRS; i++)
-    {
+    for (int i = 0; i < PAIRS; i++) {
         set[i * 2] = 'A' + i;
         set[i * 2 + 1] = 'A' + i;
     }
-
-    // srand((unsigned)time(NULL)); // main에서 이미 호출됨
-    for (int i = total - 1; i > 0; i--)
-    {
+    for (int i = total - 1; i > 0; i--) {
         int j = rand() % (i + 1);
-        char t = set[i];
-        set[i] = set[j];
-        set[j] = t;
+        char t = set[i]; set[i] = set[j]; set[j] = t;
     }
-
-    for (int i = 0; i < R; i++)
-    {
-        for (int j = 0; j < C; j++)
-        {
+    for (int i = 0; i < R; i++) {
+        for (int j = 0; j < C; j++) {
             cards[i][j] = set[i * C + j];
             matched[i][j] = false;
         }
     }
 }
 
-void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score) //게임판 출력
-{
-    system("cls"); //화면 초기화 (전체 화면 덮어쓰기)
+void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score) {
+    system("cls"); 
     printf("\n---남은 기회 : %d | 맞춘 짝 : %d/%d ---\n", attempts, score, PAIRS);
     printf("   ");
     for (int j = 0; j < C; j++) printf(" %d    ", j + 1);
     printf("\n");
-    for (int i = 0; i < R; i++)
-    {
+    for (int i = 0; i < R; i++) {
         printf("%d", i + 1);
-        // 행이 2개이므로 ┌───┐를 C개 (5개)만큼 출력합니다.
         printf("┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐\n");
-        for (int j = 0; j < C; j++)
-        {
+        for (int j = 0; j < C; j++) {
             printf(" │ %c │", matched[i][j] ? cards[i][j] : '?');
         }
         printf("\n");
-        printf(" └───┘ └───┘ └───┘ └───┘ └───┘");
-        printf("\n");
+        printf(" └───┘ └───┘ └───┘ └───┘ └───┘\n");
     }
 }
 
-void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c) //좌표 입력 받기
-{
+void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c) {
     int row, col;
-    while (1)
-    {
+    while (1) {
         printf("선택 (행 열): ");
-        if (scanf("%d %d", &row, &col) != 2)
-        {
+        if (scanf("%d %d", &row, &col) != 2) {
             clear_input_buffer();
-            printf("유효하지 않은 입력입니다. 숫자 두 개를 입력하세요.\n");
+            printf("유효하지 않은 입력입니다.\n");
             continue;
         }
         clear_input_buffer();
         row--; col--;
-        if (row >= 0 && row < R && col >= 0 && col < C && !matched[row][col])
-        {
+        if (row >= 0 && row < R && col >= 0 && col < C && !matched[row][col]) {
             *r = row; *c = col;
             return;
         }
-        else
-        {
+        else {
             printf("잘못된 위치이거나 이미 맞춘 카드 입니다.\n");
         }
     }
 }
 
-void wait_for_enter(void)
-{
+void wait_for_enter(void) {
     printf(">> Enter 키를 누르세요.\n");
     int ch = getchar();
     if (ch != '\n') clear_input_buffer();
 }
-
-// =================================================================
-// [스테이지 1 함수 구현]
-// =================================================================
-
-int PlayCardGame() {
-    // 게임 상태 변수를 지역 변수로 선언
-    char cards[R][C];
-    bool matched[R][C];
-    int attempts = MAX_ATTEMPTS;
-    int score = 0;
-
-    // 프로젝트 UI 호출 (system("cls")가 포함된 draw_board에 의해 덮어씌워짐)
-    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 카드의 짝을 모두 찾으세요.");
-
-    init_cards(cards, matched);
-    printf("카드 짝맞추기 게임 시작! 기회 %d번. \n", MAX_ATTEMPTS); // 포맷 수정
-
-    while (attempts > 0 && score < PAIRS)
-    {
-        draw_board(cards, matched, attempts, score);
-
-        int r1, c1, r2, c2;
-
-        // 첫 번째 선택
-        get_selection(cards, matched, &r1, &c1);
-        printf("첫 번째 선택된 카드 : %c\n", cards[r1][c1]);
-
-        // 두 번째 선택
-        get_selection(cards, matched, &r2, &c2);
-        while (r1 == r2 && c1 == c2)
-        {
-            printf("같은 카드를 선택했습니다. 다시 선택하세요.\n");
-            get_selection(cards, matched, &r2, &c2);
-        }
-        printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
-
-        // 결과 확인
-        if (cards[r1][c1] == cards[r2][c2])
-        {
-            printf("[성공] 짝을 맞췄습니다!\n");
-            matched[r1][c1] = true;
-            matched[r2][c2] = true;
-            score++;
-        }
-        else
-        {
-            printf("[실패] 짝이 틀렸습니다.\n");
-            attempts--;
-        }
-
-        wait_for_enter();
-    }
-
-    // 결과 표시
-    if (score == PAIRS)
-    {
-        ShowPopup("게임 클리어!", "첫 번째 단서 획득!");
-        return 1;
-    }
-    else
-    {
-        ShowPopup("게임 오버", "스테이지 1 실패...");
-        return 0;
-    }
-}
-
-// =================================================================
-// [기존 프로젝트 UI 및 기타 스테이지 함수] (이하 생략)
-// =================================================================
 
 void InitUI() {
     CONSOLE_CURSOR_INFO cursorInfo;
     cursorInfo.dwSize = 1;
     cursorInfo.bVisible = FALSE;
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursorInfo);
-
     SetConsoleTitle("ESC: 방탈출 게임");
     system("mode con: cols=80 lines=25");
 }
@@ -352,10 +276,51 @@ void PrintCenter(int y, char* text) {
     Gotoxy(x, y); printf("%s", text);
 }
 
-// PlayRhythmGame, PlaySequenceGame, PlayMemoryGame, PlayBossGame 등 나머지 함수들은 
-// 코드 길이를 줄이기 위해 생략합니다. 실제 코드에는 그대로 유지하시면 됩니다.
+int PlayCardGame() {
+    char cards[R][C];
+    bool matched[R][C];
+    int attempts = MAX_ATTEMPTS;
+    int score = 0;
 
-// PlayRhythmGame 함수 (기존 코드의 나머지 부분)
+    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 카드의 짝을 모두 찾으세요.");
+    init_cards(cards, matched);
+    printf("카드 짝맞추기 게임 시작! 기회 %d번. \n", MAX_ATTEMPTS);
+
+    while (attempts > 0 && score < PAIRS) {
+        draw_board(cards, matched, attempts, score);
+        int r1, c1, r2, c2;
+
+        get_selection(cards, matched, &r1, &c1);
+        printf("첫 번째 선택된 카드 : %c\n", cards[r1][c1]);
+
+        get_selection(cards, matched, &r2, &c2);
+        while (r1 == r2 && c1 == c2) {
+            printf("같은 카드를 선택했습니다. 다시 선택하세요.\n");
+            get_selection(cards, matched, &r2, &c2);
+        }
+        printf("두 번째 선택된 카드 : %c\n", cards[r2][c2]);
+
+        if (cards[r1][c1] == cards[r2][c2]) {
+            printf("[성공] 짝을 맞췄습니다!\n");
+            matched[r1][c1] = true;
+            matched[r2][c2] = true;
+            score++;
+        }
+        else {
+            printf("[실패] 짝이 틀렸습니다.\n");
+            attempts--;
+        }
+        wait_for_enter();
+    }
+
+    if (score == PAIRS) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
 #define R_LANE_START_X 10
 #define R_LANE_WIDTH 6
 #define R_JUDGE_LINE_Y 20
@@ -521,16 +486,16 @@ int PlayMemoryGame() {
         for (int i = 0; i < length; i++) sequence[i] = rand() % 10;
 
         char title[50]; sprintf(title, "스테이지 4: 기억력 (라운드 %d)", round + 1);
-
+        
         for (int i = 0; i < length; i++) {
             DrawLayout(title, "숫자를 기억하세요 (2초 간격으로 나타납니다)");
             char numStr[20]; sprintf(numStr, "[ %d ]", sequence[i]);
-
+            
             SetColor(COLOR_CYAN, COLOR_BLACK);
             PrintCenter(12, numStr);
-
+            
             Sleep(2000);
-
+            
             DrawLayout(title, "...");
             Sleep(200);
         }
@@ -538,13 +503,13 @@ int PlayMemoryGame() {
 
         DrawLayout(title, "기억한 숫자를 순서대로 입력하세요.");
         UpdateStatusBar("입력 완료 후 엔터", "띄어쓰기 없이 입력 (예: 123)");
-
+        
         Gotoxy(25, 12); printf("정답 입력: ");
-
+        
         if (scanf_s("%s", input, 100) != 1) {
-            while (getchar() != '\n'); return 0;
+            while(getchar() != '\n'); return 0;
         }
-        while (getchar() != '\n');
+        while(getchar() != '\n');
 
         int correct = 1;
         if (strlen(input) != length) correct = 0;
@@ -558,10 +523,9 @@ int PlayMemoryGame() {
 
         if (correct) {
             ShowPopup("정답!", "다음 라운드로 진행합니다.");
-        }
-        else {
+        } else {
             char answerStr[50] = "정답: ";
-            for (int i = 0; i < length; i++) {
+            for(int i=0; i<length; i++) {
                 char temp[2]; sprintf(temp, "%d", sequence[i]);
                 strcat(answerStr, temp);
             }
@@ -572,24 +536,18 @@ int PlayMemoryGame() {
     return 1;
 }
 
-/* =========================
-    Stage 5: Boss Chase Game (오류 수정됨)
-    ========================= */
-
-    // 구조체 및 상수 전역 정의
-#define BOSS_WIDTH 80
-#define BOSS_HEIGHT 25
-#define BOSS_WALL_CHAR "#"
-#define BOSS_PLAYER_CHAR "o"
-#define BOSS_ENEMY_CHAR "X"
-#define BOSS_ITEM_CHAR "$"
+#define B_WIDTH 80
+#define B_HEIGHT 25
+#define B_WALL_CHAR "#"
+#define B_PLAYER_CHAR "o"
+#define B_ENEMY_CHAR "X"
+#define B_ITEM_CHAR "$"
 
 typedef struct { int x, y; } BWall;
 typedef struct { int x, y; int active; } BItem;
 
-// 보조 함수들을 전역으로 이동
 void b_set_cursor(int x, int y) { Gotoxy(x, y); }
-void b_set_color(int color) { SetColor(color, COLOR_BLACK); }
+void b_set_color(int color) { SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color); }
 
 int b_is_wall(int x, int y, BWall walls[], int count) {
     for (int i = 0; i < count; i++) if (x == walls[i].x && y == walls[i].y) return 1;
@@ -600,17 +558,17 @@ void b_draw_walls(BWall walls[], int count) {
     b_set_color(8);
     for (int i = 0; i < count; i++) {
         b_set_cursor(walls[i].x, walls[i].y);
-        printf("%s", BOSS_WALL_CHAR);
+        printf("%s", B_WALL_CHAR);
     }
     b_set_color(COLOR_WHITE);
 }
 
 void b_draw_items(BItem items[], int count) {
-    b_set_color(COLOR_YELLOW);
+    b_set_color(14);
     for (int i = 0; i < count; i++) {
         if (items[i].active) {
             b_set_cursor(items[i].x, items[i].y);
-            printf("%s", BOSS_ITEM_CHAR);
+            printf("%s", B_ITEM_CHAR);
         }
     }
     b_set_color(COLOR_WHITE);
@@ -621,8 +579,8 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
         int x, y, valid;
         do {
             valid = 1;
-            x = rand() % BOSS_WIDTH;
-            y = rand() % BOSS_HEIGHT;
+            x = rand() % B_WIDTH;
+            y = rand() % B_HEIGHT;
             for (int w = 0; w < wallCount; w++) {
                 if (walls[w].x == x && walls[w].y == y) { valid = 0; break; }
             }
@@ -633,15 +591,13 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
 }
 
 int PlayBossGame() {
-    // 게임 상태 변수
     int px, py, ex, ey;
     int ch, round = 1;
     DWORD lastMoveTime;
     int baseSpeed = 300;
     int score = 0;
-    const int rounds_to_win = 2; // 라운드 2회 성공하면 스테이지 클리어
+    const int rounds_to_win = 2; 
 
-    // walls
     BWall walls[] = {
         {10,3},{15,5},{20,8},{35,6},{40,10},{45,15},{60,7},{62,8},{64,9},
         {25,18},{30,20},{50,22},{12,12},{18,14},{22,16},{70,5},{72,9},{74,12}
@@ -650,7 +606,6 @@ int PlayBossGame() {
 
     BItem items[3];
 
-    // 숨김 커서
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO ci;
     GetConsoleCursorInfo(out, &ci);
@@ -660,7 +615,6 @@ int PlayBossGame() {
 restart_round:
     system("cls");
 
-    // 초기 위치
     px = 5; py = 5;
     ex = 70; ey = 20;
     score = 0;
@@ -670,10 +624,10 @@ restart_round:
     b_draw_items(items, 3);
 
     lastMoveTime = GetTickCount();
-    b_set_cursor(px, py); printf("%s", BOSS_PLAYER_CHAR);
-    b_set_cursor(ex, ey); printf("%s", BOSS_ENEMY_CHAR);
+    b_set_cursor(px, py); printf("%s", B_PLAYER_CHAR);
+    b_set_cursor(ex, ey); printf("%s", B_ENEMY_CHAR);
 
-    b_set_cursor(0, BOSS_HEIGHT - 1);
+    b_set_cursor(0, B_HEIGHT - 1);
     printf("Round %d 시작! 보스 속도: %.2fx\n", round, (1000.0 / baseSpeed));
 
     while (1) {
@@ -686,31 +640,28 @@ restart_round:
             if (ch == 'a' || ch == 'A' || ch == 75) nx--;
             if (ch == 'd' || ch == 'D' || ch == 77) nx++;
             if (ch == 'q' || ch == 'Q') {
-                // 중단: 실패로 처리
                 ci.bVisible = TRUE;
                 SetConsoleCursorInfo(out, &ci);
                 return 0;
             }
 
-            if (nx < 0 || ny < 0 || nx >= BOSS_WIDTH || ny >= BOSS_HEIGHT) continue;
+            if (nx < 0 || ny < 0 || nx >= B_WIDTH || ny >= B_HEIGHT) continue;
             if (b_is_wall(nx, ny, walls, wallCount)) continue;
 
             b_set_cursor(px, py); printf(" ");
             px = nx; py = ny;
-            b_set_cursor(px, py); printf("%s", BOSS_PLAYER_CHAR);
+            b_set_cursor(px, py); printf("%s", B_PLAYER_CHAR);
         }
 
-        // 아이템 획득
         for (int i = 0; i < 3; i++) {
             if (items[i].active && px == items[i].x && py == items[i].y) {
                 items[i].active = 0;
                 b_set_cursor(items[i].x, items[i].y); printf(" ");
                 score++;
-                b_set_cursor(0, BOSS_HEIGHT - 1);
+                b_set_cursor(0, B_HEIGHT - 1);
                 printf("?? 아이템 획득! (%d / 3)\n", score);
             }
         }
-
 
         if (GetTickCount() - lastMoveTime > baseSpeed) {
             int dx = 0, dy = 0;
@@ -728,15 +679,14 @@ restart_round:
             if (!b_is_wall(nex, ney, walls, wallCount) && !onItem) {
                 b_set_cursor(ex, ey); printf(" ");
                 ex = nex; ey = ney;
-                b_set_cursor(ex, ey); printf("%s", BOSS_ENEMY_CHAR);
+                b_set_cursor(ex, ey); printf("%s", B_ENEMY_CHAR);
             }
 
             lastMoveTime = GetTickCount();
         }
 
-
         if (abs(ex - px) < 1 && abs(ey - py) < 1) {
-            b_set_cursor(0, BOSS_HEIGHT - 1);
+            b_set_cursor(0, B_HEIGHT - 1);
             printf("\n?? 추격자에게 잡혔습니다! 실패...\n");
             Sleep(1200);
             ci.bVisible = TRUE;
@@ -744,11 +694,10 @@ restart_round:
             return 0;
         }
 
-
         if (score == 3) {
             round++;
             if (round > rounds_to_win) {
-                b_set_cursor(0, BOSS_HEIGHT - 1);
+                b_set_cursor(0, B_HEIGHT - 1);
                 printf("\n?? 보스전 클리어! 축하합니다.\n");
                 Sleep(1000);
                 ci.bVisible = TRUE;
@@ -756,7 +705,7 @@ restart_round:
                 return 1;
             }
             baseSpeed = (int)(baseSpeed * 0.6);
-            b_set_cursor(0, BOSS_HEIGHT - 1);
+            b_set_cursor(0, B_HEIGHT - 1);
             printf("\n?? 아이템 모두 획득! 다음 라운드 시작...\n");
             Sleep(1200);
             goto restart_round;
@@ -765,7 +714,6 @@ restart_round:
         Sleep(10);
     }
 
-    // unreachable
     ci.bVisible = TRUE;
     SetConsoleCursorInfo(out, &ci);
     return 0;
