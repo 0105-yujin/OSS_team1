@@ -1,4 +1,4 @@
-#define_CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +117,7 @@ int main(void)
       int r1, c1, r2, c2;
 
       get_selection(&r1, &c1);
-      printf("첫 번째 선택된 카드 : %c\n",card[r1][c1]);
+      printf("첫 번째 선택된 카드 : %c\n",cards[r1][c1]);
 
       get_selection(&r2,&c2);
       while(r1==r2 && c1== c2)
