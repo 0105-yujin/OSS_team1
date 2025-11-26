@@ -304,12 +304,25 @@ int PlayCardGame() {
             int x = 18 + col * 8;
             int y = 7 + row * 6;
 
-            SetColor(revealed[idx] ? COLOR_CYAN : COLOR_WHITE, COLOR_BLACK);
+            // 1. 윗면 (흰색 고정)
+            SetColor(COLOR_WHITE, COLOR_BLACK);
             Gotoxy(x, y); printf("┌───┐");
-            Gotoxy(x, y + 1); printf("│ %c │", revealed[idx] ? '0' + cards[idx] : '?');
+
+            // 2. 중간면 (벽은 흰색, 내용만 색상 변경)
+            Gotoxy(x, y + 1);
+            SetColor(COLOR_WHITE, COLOR_BLACK); printf("│ "); // 왼쪽 벽
+
+            if (revealed[idx]) SetColor(COLOR_CYAN, COLOR_BLACK); // 내용물: 파란색
+            else SetColor(COLOR_WHITE, COLOR_BLACK);              // 내용물: 흰색
+
+            printf("%c", revealed[idx] ? '0' + cards[idx] : '?');
+
+            SetColor(COLOR_WHITE, COLOR_BLACK); printf(" │"); // 오른쪽 벽
+
+            // 3. 아랫면 (흰색 고정)
             Gotoxy(x, y + 2); printf("└───┘");
 
-            // 카드 밑 번호: 1~9,0 순서
+            // 번호 (흰색 고정)
             Gotoxy(x + 2, y + 3);
             printf("%d", (idx + 1) % 10);
         }
@@ -781,5 +794,6 @@ restart_round:
     SetConsoleCursorInfo(out, &ci);
     return 0;
 }
+
 
 
