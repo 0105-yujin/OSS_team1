@@ -98,26 +98,11 @@ int main() {
             sprintf(msgBuf, "네 번째 단서 획득: [ %d ]", FINAL_CODE[3]);
             ShowPopup("스테이지 클리어", msgBuf);
 
-            // 💡 보스 게임 라운드 처리를 메인에서 수행하도록 수정
-            int boss_rounds_cleared = 0;
-            const int rounds_to_win = 3;
-
-            for (int r = 1; r <= rounds_to_win; r++) {
-                if (PlayBossGame(r) == 0) { // PlayBossGame 함수가 라운드 번호를 받도록 수정이 필요
-                    ShowPopup("실패", "게임 오버 (5단계)");
-                    boss_rounds_cleared = 0; // 혹시 몰라 초기화
-                    break;
-                }
-                boss_rounds_cleared++;
-                if (boss_rounds_cleared < rounds_to_win) {
-                    // ShowPopup은 PlayBossGame 내부에서 호출됨 (다음 라운드 시작 메시지)
-                }
-            }
-
-            if (boss_rounds_cleared < rounds_to_win) {
+          
+            if (PlayBossGame() == 0) {
+                ShowPopup("실패", "게임 오버 (5단계)");
                 continue;
             }
-
             sprintf(msgBuf, "마지막 단서 획득: [ %d ]", FINAL_CODE[4]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -867,3 +852,4 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
+
