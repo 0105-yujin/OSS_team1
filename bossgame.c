@@ -150,7 +150,7 @@ restart_round:
                 set_cursor(items[i].x, items[i].y); printf(" ");
                 score++;
                 set_cursor(0, HEIGHT);
-                printf("💰 아이템 획득! (%d / 3)\n", score);
+                printf("아이템 획득! (%d / 3)\n", score);
             }
         }
 
@@ -180,7 +180,7 @@ restart_round:
 
         if (abs(ex-x)<1 && abs(ey-y)<1) {
             set_cursor(0, HEIGHT);
-            printf("\n💀 추격자에게 잡혔습니다! 게임 오버.\n");
+            printf("\n 추격자에게 잡혔습니다! 게임 오버.\n");
             break;
         }
 
@@ -188,7 +188,7 @@ restart_round:
             round++;
             baseSpeed = (int)(baseSpeed*0.6);
             set_cursor(0, HEIGHT);
-            printf("\n🎉 아이템 모두 획득! 다음 라운드 시작...\n");
+            printf("\n 아이템 모두 획득! 다음 라운드 시작...\n");
             Sleep(2000);
             goto restart_round;
         }
