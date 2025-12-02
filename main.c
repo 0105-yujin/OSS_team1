@@ -414,11 +414,25 @@ typedef struct {
 
 int PlayRhythmGame() {
     system("cls");
-    R_Note notes[] = {
-        {2000, 0, 0, -1}, {3000, 1, 0, -1}, {4000, 2, 0, -1}, {5000, 3, 0, -1},
-        {6000, 0, 0, -1}, {6500, 1, 0, -1}, {7000, 0, 0, -1}, {7500, 3, 0, -1}
-    };
-    int noteCount = sizeof(notes) / sizeof(R_Note);
+    R_Note notes[100];
+    int noteCount = 0;
+
+    static int patternIndex = 0;
+    patternIndex = (patternIndex %3)+1;
+
+    char filename[20];
+    sprintf(filename,"pattern%d.txt",patternIndex);
+
+    File *fp = fopen(filename,"r");
+    if (fp != NULL) {
+        // notes 배열에 저장
+        while (fscanf(fp, "%ld %d", &notes[noteCount].targetTime, &notes[noteCount].line) != EOF) {
+            notes[noteCount].judged = 0;
+            notes[noteCount].prevY = -1;
+            noteCount++;
+            if (noteCount >= 100) break; // 최대 100개까지만 로드
+        }
+        fclose(fp);
 
     DrawLayout("스테이지 2: 리듬 게임", "타이밍에 맞춰 키를 누르세요!");
     SetColor(COLOR_CYAN, COLOR_BLACK);
@@ -852,4 +866,5 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
+
 
