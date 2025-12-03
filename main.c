@@ -21,7 +21,7 @@
 #define PAIRS 5 
 #define MAX_ATTEMPTS 10
 
-int FINAL_CODE[5];
+int FINAL_CODE[5] = { 7, 3, 9, 1, 5 };
 
 void InitUI();
 void Gotoxy(int x, int y);
@@ -50,11 +50,6 @@ int main() {
     InitUI();
     srand((unsigned int)time(NULL));
 
-    for (int i = 0; i < 4; i++)
-    {
-        FINAL_CODE[i] = rand() % 10;
-    }
-
     char msgBuf[100];
 
     while (1) {
@@ -75,14 +70,14 @@ int main() {
             PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
             _getch();
 
+           
 
-
-            /*if (PlayCardGame() == 0) {
+            if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
-            ShowPopup("스테이지 클리어", msgBuf);*/
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
@@ -431,20 +426,11 @@ typedef struct {
 
 int PlayRhythmGame() {
     system("cls");
-    R_Note notes[100];
-    int noteCount = 20;
-
-    long lastTime = 2000;
-
-    for (int i = 0; i < noteCount; i++) {
-        notes[i].targetTime = lastTime;
-        notes[i].line = rand() % 4;
-        notes[i].judged = 0;
-        notes[i].prevY = -1;
-
-        lastTime += 50 + (rand() % 3+1) * 200;
-    }
-
+    R_Note notes[] = {
+        {2000, 0, 0, -1}, {3000, 1, 0, -1}, {4000, 2, 0, -1}, {5000, 3, 0, -1},
+        {6000, 0, 0, -1}, {6500, 1, 0, -1}, {7000, 0, 0, -1}, {7500, 3, 0, -1}
+    };
+    int noteCount = sizeof(notes) / sizeof(R_Note);
 
     DrawLayout("스테이지 2: 리듬 게임", "타이밍에 맞춰 키를 누르세요!");
     SetColor(COLOR_CYAN, COLOR_BLACK);
@@ -535,7 +521,7 @@ int PlayRhythmGame() {
         if (allFinished) { Sleep(1000); break; }
         Sleep(30);
     }
-    return (score >= 1000) ? 1 : 0;
+    return (score >= 300) ? 1 : 0;
 }
 
 // PlaySequenceGame 수정 시작
@@ -736,27 +722,76 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
     }
 }
 
+
+// ===============================
+// ★ 추가됨 : b_reset_walls 함수 완전체
+// ===============================
+void b_reset_walls(BWall walls[], int count, int px, int py, int ex, int ey, BItem items[], int itemCount)
+{
+    for (int i = 0; i < count; i++)
+    {
+        int x, y, valid;
+
+        do {
+            valid = 1;
+
+            // UI 프레임 영역 제외 (5~B_HEIGHT-2)
+            x = rand() % B_WIDTH;
+            y = 5 + rand() % (B_HEIGHT - 6);
+
+            // 플레이어 위치 제외
+            if (x == px && y == py)
+                valid = 0;
+
+            // 보스 위치 제외
+            if (x == ex && y == ey)
+                valid = 0;
+
+            // 아이템과 충돌 금지
+            for (int k = 0; k < itemCount; k++) {
+                if (items[k].active && items[k].x == x && items[k].y == y) {
+                    valid = 0;
+                    break;
+                }
+            }
+
+            // 기존 벽과 충돌 금지
+            for (int w = 0; w < i; w++) {
+                if (walls[w].x == x && walls[w].y == y) {
+                    valid = 0;
+                    break;
+                }
+            }
+
+        } while (!valid);
+
+        walls[i].x = x;
+        walls[i].y = y;
+    }
+}
+// ===============================
+// ★ 추가 끝
+// ===============================
+
+
 // 💡 메인 함수에서 라운드 번호와 속도를 관리하도록 인자를 추가했습니다.
 int PlayBossGame(int current_round) {
     int px, py, ex, ey;
     int ch;
     DWORD lastMoveTime;
 
-    // 라운드에 따라 속도를 계산 (1라운드: 300, 2라운드: 180, 3라운드: 108)
+    // 라운드에 따라 속도 변화
     int baseSpeed = 300;
     for (int i = 1; i < current_round; i++) {
-        baseSpeed = (int)(baseSpeed * 0.6);
+        baseSpeed = (int)(baseSpeed * 0.7);
     }
-    const int rounds_to_win = 3; // 총 라운드 횟수는 3으로 가정
+    const int rounds_to_win = 3;
 
     int score = 0;
 
-    BWall walls[] = {
-    {10,7},{15,8},{20,10},{35,9},{40,12},{45,16},{60,8},{62,9},{64,11},
-    {25,18},{30,20},{50,22},{12,13},{18,15},{22,17},{70,7},{72,10},{74,13}
-    };
+    BWall walls[19];
+    int wallCount = 19;
 
-    int wallCount = sizeof(walls) / sizeof(walls[0]);
     BItem items[3];
 
     HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -773,9 +808,14 @@ int PlayBossGame(int current_round) {
     ex = 70; ey = 20;
     score = 0;
 
+    // ★ 여기서 오류났던 b_reset_walls가 이제 존재함!
+    b_reset_walls(walls, wallCount, px, py, ex, ey, items, 3);
     b_reset_items(items, 3, walls, wallCount, px, py, ex, ey);
 
-    // 이 부분은 DrawLayout을 사용하지 않으므로 직접 타이틀을 출력
+    b_draw_walls(walls, wallCount);
+    b_draw_items(items, 3);
+
+    // UI 출력
     b_set_color(COLOR_GREEN, COLOR_BLACK);
     Gotoxy(2, 1); printf("[ ESC 시스템 ]");
     PrintCenter(2, "스테이지 5: 최종 보스전");
@@ -790,21 +830,26 @@ int PlayBossGame(int current_round) {
 
     lastMoveTime = GetTickCount();
 
-    // 플레이어 색상 적용 (청록색 3)
+    // 플레이어
     b_set_color(3, BG_COLOR);
     b_set_cursor(px, py); printf("%s", B_PLAYER_CHAR);
 
-    // 보스 색상 적용 (빨강 12)
+    // 보스
     b_set_color(12, BG_COLOR);
     b_set_cursor(ex, ey); printf("%s", B_ENEMY_CHAR);
-    b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR); // 기본 색상으로 복구
+    b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR);
 
-    // 💡 상태 표시줄 (B_HEIGHT - 1) 강조
+    // 상태줄
     b_set_cursor(0, B_HEIGHT - 1);
     printf("Round %d 시작! 보스 속도: %.2fx", current_round, (1000.0 / baseSpeed));
     // --- 라운드 초기화 끝 ---
 
+    // ===========================
+    //   게임 루프
+    // ===========================
     while (score < 3) {
+
+        // 플레이어 이동
         if (_kbhit()) {
             ch = _getch();
             if (ch == 0 || ch == 224) ch = _getch();
@@ -829,9 +874,9 @@ int PlayBossGame(int current_round) {
             }
 
             px = nx; py = ny;
-            b_set_color(3, BG_COLOR); // 플레이어 색상 설정
+            b_set_color(3, BG_COLOR);
             b_set_cursor(px, py); printf("%s", B_PLAYER_CHAR);
-            b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR); // 기본 색상으로 복구
+            b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR);
         }
 
         // 아이템 획득
@@ -842,12 +887,13 @@ int PlayBossGame(int current_round) {
                 score++;
 
                 b_set_cursor(0, B_HEIGHT - 1);
-                printf("아이템 획득! (%d / 3)      ", score); // 지워지는 영역 확보
+                printf("아이템 획득! (%d / 3)      ", score);
             }
         }
 
-        // 보스 움직임
+        // 보스 이동
         if (GetTickCount() - lastMoveTime > baseSpeed) {
+
             int dx = 0, dy = 0;
             if (ex < px) dx = 1;
             if (ex > px) dx = -1;
@@ -862,44 +908,39 @@ int PlayBossGame(int current_round) {
                 if (items[i].active && items[i].x == nex && items[i].y == ney)
                     onItem = 1;
 
-            if (ney < B_HEIGHT - 1 && !b_is_wall(nex, ney, walls, wallCount) && !onItem) {
-                if (ey < B_HEIGHT - 1) {
-                    b_set_cursor(ex, ey); printf(" ");
-                }
+            if (!onItem && !b_is_wall(nex, ney, walls, wallCount) && ney < B_HEIGHT - 1) {
+                b_set_cursor(ex, ey); printf(" ");
                 ex = nex; ey = ney;
-                b_set_color(12, BG_COLOR); // 보스 색상 설정
+
+                b_set_color(12, BG_COLOR);
                 b_set_cursor(ex, ey); printf("%s", B_ENEMY_CHAR);
-                b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR); // 기본 색상으로 복구
+                b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR);
             }
+
             lastMoveTime = GetTickCount();
         }
 
-        // 보스가 플레이어 잡음 (실패)
+        // 보스가 플레이어 잡았는지 확인
         if (abs(ex - px) < 1 && abs(ey - py) < 1) {
-            b_set_color(12, BG_COLOR); // 실패 메시지는 빨간색
+            b_set_color(12, BG_COLOR);
             b_set_cursor(0, B_HEIGHT - 1);
-            printf("\n보스에게 잡혔습니다! 실패...                                  \n");
+            printf("\n보스에게 잡혔습니다! 실패...\n");
             Sleep(1200);
             ci.bVisible = TRUE;
             SetConsoleCursorInfo(out, &ci);
-            return 0; // 게임 오버
+            return 0;
         }
 
         Sleep(10);
     }
 
-    // 아이템 3개 모두 획득 시 (라운드 클리어)
+    // 아이템 3개 얻음 → 라운드 클리어
     ci.bVisible = TRUE;
     SetConsoleCursorInfo(out, &ci);
 
     if (current_round < rounds_to_win) {
         ShowPopup("라운드 클리어", "다음 라운드 시작!");
     }
-    else {
-        // 최종 라운드 클리어 시에는 팝업을 띄우지 않고 메인으로 복귀하여 단서 획득 팝업이 뜨도록 함
-    }
 
-    return 1; // 라운드 성공
+    return 1;
 }
-
-
