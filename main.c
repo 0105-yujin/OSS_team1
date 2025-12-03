@@ -42,7 +42,7 @@ int PlayCardGame();
 int PlayRhythmGame();
 int PlaySequenceGame();
 int PlayMemoryGame();
-int PlayBossGame();
+int PlayBossGame(int current_round); // 매개변수 추가 (원래 코드 구조에 맞춤)
 
 int main() {
 
@@ -99,10 +99,20 @@ int main() {
             ShowPopup("스테이지 클리어", msgBuf);
 
 
-            if (PlayBossGame() == 0) {
+            // PlayBossGame은 3라운드 클리어 시 성공으로 간주
+            int boss_success = 1;
+            for (int round = 1; round <= 3; round++) {
+                if (PlayBossGame(round) == 0) {
+                    boss_success = 0;
+                    break;
+                }
+            }
+
+            if (boss_success == 0) {
                 ShowPopup("실패", "게임 오버 (5단계)");
                 continue;
             }
+
             sprintf(msgBuf, "마지막 단서 획득: [ %d ]", FINAL_CODE[4]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -512,6 +522,7 @@ int PlayRhythmGame() {
     return (score >= 300) ? 1 : 0;
 }
 
+// PlaySequenceGame 수정 시작
 int PlaySequenceGame() {
     int base_seq[5] = { 1, 4, 3, 5, 2 };
     int map[6]; for (int i = 1; i <= 5; i++) map[i] = i;
@@ -520,24 +531,31 @@ int PlaySequenceGame() {
     int order[5] = { 0, 1, 2, 3, 4 };
     for (int i = 4; i > 0; i--) { int j = rand() % (i + 1); int t = order[i]; order[i] = order[j]; order[j] = t; }
 
-    DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
-    UpdateStatusBar("입력: 1 2 3 4 5", "논리에 집중하세요");
-    int startY = 7; Gotoxy(5, startY - 2); printf("[ 힌트 ]");
-
-    for (int k = 0; k < 5; k++) {
-        Gotoxy(5, startY + (k * 2)); printf("%d. ", k + 1);
-        switch (order[k]) {
-        case 0: printf("숫자 %d은(는) 첫 번째 위치에 있습니다.", map[1]); break;
-        case 1: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[4], map[3]); break;
-        case 2: printf("숫자 %d은(는) %d 앞에 옵니다.", map[3], map[5]); break;
-        case 3: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[5], map[2]); break;
-        case 4: printf("숫자 %d은(는) %d 앞에 옵니다.", map[1], map[5]); break;
-        }
-    }
-
+    int startY = 7;
     int input[5], tries = 3;
     while (tries > 0) {
-        char msg[30]; sprintf(msg, "남은 시도: %d", tries); UpdateStatusBar(msg, "형식: 1 2 3 4 5");
+
+        // 정답을 틀리거나(ShowPopup에서 system("cls") 호출) 혹은 반복문의 첫 시작 시
+        // 레이아웃과 힌트를 다시 그립니다.
+        DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
+        Gotoxy(5, startY - 2); printf("[ 힌트 ]");
+
+        for (int k = 0; k < 5; k++) {
+            Gotoxy(5, startY + (k * 2)); printf("%d. ", k + 1);
+            switch (order[k]) {
+            case 0: printf("숫자 %d은(는) 첫 번째 위치에 있습니다.", map[1]); break;
+            case 1: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[4], map[3]); break;
+            case 2: printf("숫자 %d은(는) %d 앞에 옵니다.", map[3], map[5]); break;
+            case 3: printf("숫자 %d은(는) %d 바로 앞에 있습니다.", map[5], map[2]); break;
+            case 4: printf("숫자 %d은(는) %d 앞에 옵니다.", map[1], map[5]); break;
+            }
+        }
+
+        // 상태바 업데이트 (남은 시도 반영)
+        char msg[30];
+        sprintf(msg, "남은 시도: %d", tries);
+        UpdateStatusBar(msg, "형식: 1 2 3 4 5");
+
         Gotoxy(15, 20); printf("코드 입력 (예: 4 2 3 1 5):                                      "); Gotoxy(44, 20);
         if (scanf_s("%d %d %d %d %d", &input[0], &input[1], &input[2], &input[3], &input[4]) != 5) {
             while (getchar() != '\n');
@@ -548,11 +566,14 @@ int PlaySequenceGame() {
         int correct = 1; for (int i = 0; i < 5; i++) if (input[i] != answer[i]) { correct = 0; break; }
         if (correct) return 1;
         else {
-            tries--; ShowPopup("틀림", "잘못된 순서입니다.");
+            tries--;
+            ShowPopup("틀림", "잘못된 순서입니다.");
+            // 팝업 이후 화면이 클리어되므로, 반복문의 다음 회전에서 힌트가 다시 그려집니다.
         }
     }
     return 0;
 }
+// PlaySequenceGame 수정 끝
 
 int PlayMemoryGame() {
     int round_lengths[] = { 3, 5, 7 };
@@ -736,6 +757,17 @@ int PlayBossGame(int current_round) {
     score = 0;
 
     b_reset_items(items, 3, walls, wallCount, px, py, ex, ey);
+
+    // 이 부분은 DrawLayout을 사용하지 않으므로 직접 타이틀을 출력
+    b_set_color(COLOR_GREEN, COLOR_BLACK);
+    Gotoxy(2, 1); printf("[ ESC 시스템 ]");
+    PrintCenter(2, "스테이지 5: 최종 보스전");
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
+    PrintCenter(3, "3개의 아이템을 모두 모으고 다음 라운드로 가세요!");
+    b_set_color(COLOR_GREEN, COLOR_BLACK);
+    Gotoxy(1, 4); for (int i = 1; i < 79; i++) printf("-");
+    b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR);
+
     b_draw_walls(walls, wallCount);
     b_draw_items(items, 3);
 
