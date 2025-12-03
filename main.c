@@ -70,14 +70,14 @@ int main() {
             PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
             _getch();
 
-           
+
 
             if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
-            ShowPopup("스테이지 클리어", msgBuf);
+            ShowPopup("스테이지 클리어", msgBuf);*
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
@@ -426,11 +426,20 @@ typedef struct {
 
 int PlayRhythmGame() {
     system("cls");
-    R_Note notes[] = {
-        {2000, 0, 0, -1}, {3000, 1, 0, -1}, {4000, 2, 0, -1}, {5000, 3, 0, -1},
-        {6000, 0, 0, -1}, {6500, 1, 0, -1}, {7000, 0, 0, -1}, {7500, 3, 0, -1}
-    };
-    int noteCount = sizeof(notes) / sizeof(R_Note);
+    R_Note notes[100];
+    int noteCount = 20;
+
+    long lastTime = 2000;
+
+    for (int i = 0; i < noteCount; i++) {
+        notes[i].targetTime = lastTime;
+        notes[i].line = rand() % 4;
+        notes[i].judged = 0;
+        notes[i].prevY = -1;
+
+        lastTime += 50 + (rand() % 3+1) * 200;
+    }
+
 
     DrawLayout("스테이지 2: 리듬 게임", "타이밍에 맞춰 키를 누르세요!");
     SetColor(COLOR_CYAN, COLOR_BLACK);
@@ -521,7 +530,7 @@ int PlayRhythmGame() {
         if (allFinished) { Sleep(1000); break; }
         Sleep(30);
     }
-    return (score >= 300) ? 1 : 0;
+    return (score >= 1000) ? 1 : 0;
 }
 
 // PlaySequenceGame 수정 시작
