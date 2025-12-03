@@ -468,24 +468,12 @@ int PlayRhythmGame() {
         long currentTime = GetTick() - startTime;
         int allFinished = 1;
 
-        if (key == 'd' || key == 'D') { 
-                line = 0; 
-                Beep(262, 50);  
-            } 
-            else if (key == 'f' || key == 'F') { 
-                line = 1; 
-                Beep(294, 50); 
-            } 
-            else if (key == 'j' || key == 'J') { 
-                line = 2; 
-                Beep(330, 50); 
-            } 
-            else if (key == 'k' || key == 'K') { 
-                line = 3; 
-                Beep(349, 50); 
-            } 
+        if (_kbhit()) {
+            int key = _getch();
+            int line = -1;
+            if (key == 'd' || key == 'D') line = 0; else if (key == 'f' || key == 'F') line = 1;
+            else if (key == 'j' || key == 'J') line = 2; else if (key == 'k' || key == 'K') line = 3;
             else if (key == 'q' || key == 'Q') { gameRunning = 0; break; }
-
 
             if (line != -1) {
                 int hitIdx = -1; long minDiff = 9999;
