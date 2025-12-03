@@ -468,23 +468,24 @@ int PlayRhythmGame() {
         long currentTime = GetTick() - startTime;
         int allFinished = 1;
 
-            if (key == 'd' || key == 'D') { 
+        if (key == 'd' || key == 'D') { 
                 line = 0; 
-                Beep(262, 35); 
+                Beep(262, 50);  
             } 
             else if (key == 'f' || key == 'F') { 
                 line = 1; 
-                Beep(294, 35); 
+                Beep(294, 50); 
             } 
             else if (key == 'j' || key == 'J') { 
                 line = 2; 
-                Beep(330, 35);
+                Beep(330, 50); 
             } 
             else if (key == 'k' || key == 'K') { 
                 line = 3; 
-                Beep(349, 35); 
+                Beep(349, 50); 
             } 
             else if (key == 'q' || key == 'Q') { gameRunning = 0; break; }
+
 
             if (line != -1) {
                 int hitIdx = -1; long minDiff = 9999;
@@ -964,5 +965,3 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
-
-
