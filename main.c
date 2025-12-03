@@ -431,11 +431,20 @@ typedef struct {
 
 int PlayRhythmGame() {
     system("cls");
-    R_Note notes[] = {
-        {2000, 0, 0, -1}, {3000, 1, 0, -1}, {4000, 2, 0, -1}, {5000, 3, 0, -1},
-        {6000, 0, 0, -1}, {6500, 1, 0, -1}, {7000, 0, 0, -1}, {7500, 3, 0, -1}
-    };
-    int noteCount = sizeof(notes) / sizeof(R_Note);
+    R_Note notes[100]; 
+    int noteCount = 20;
+
+    long lastTime = 2000;
+
+    for (int i = 0; i < noteCount; i++) {
+        notes[i].targetTime = lastTime;
+        notes[i].line = rand() % 4; 
+        notes[i].judged = 0;
+        notes[i].prevY = -1;
+        
+        lastTime += 500 + (rand() % 4) * 250;
+    }
+
 
     DrawLayout("스테이지 2: 리듬 게임", "타이밍에 맞춰 키를 누르세요!");
     SetColor(COLOR_CYAN, COLOR_BLACK);
@@ -892,4 +901,5 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
+
 
