@@ -21,7 +21,7 @@
 #define PAIRS 5 
 #define MAX_ATTEMPTS 10
 
-int FINAL_CODE[5] = { 7, 3, 9, 1, 5 };
+int FINAL_CODE[5] ;
 
 void InitUI();
 void Gotoxy(int x, int y);
@@ -50,6 +50,11 @@ int main() {
     InitUI();
     srand((unsigned int)time(NULL));
 
+    for (int i = 0; i < 4; i++)
+    {
+        FINAL_CODE[i] = rand() % 10;
+    }
+    
     char msgBuf[100];
 
     while (1) {
@@ -887,3 +892,4 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
+
