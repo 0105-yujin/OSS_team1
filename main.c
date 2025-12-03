@@ -535,7 +535,7 @@ int PlayRhythmGame() {
         if (allFinished) { Sleep(1000); break; }
         Sleep(30);
     }
-    return (score >= 300) ? 1 : 0;
+    return (score >= 1000) ? 1 : 0;
 }
 
 // PlaySequenceGame 수정 시작
@@ -901,4 +901,5 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
+
 
