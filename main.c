@@ -21,7 +21,7 @@
 #define PAIRS 5 
 #define MAX_ATTEMPTS 10
 
-int FINAL_CODE[5] ;
+int FINAL_CODE[5];
 
 void InitUI();
 void Gotoxy(int x, int y);
@@ -54,7 +54,7 @@ int main() {
     {
         FINAL_CODE[i] = rand() % 10;
     }
-    
+
     char msgBuf[100];
 
     while (1) {
@@ -75,14 +75,14 @@ int main() {
             PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
             _getch();
 
-           
 
-            if (PlayCardGame() == 0) {
+
+            /*if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
-            ShowPopup("스테이지 클리어", msgBuf);
+            ShowPopup("스테이지 클리어", msgBuf);*/
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
@@ -431,18 +431,18 @@ typedef struct {
 
 int PlayRhythmGame() {
     system("cls");
-    R_Note notes[100]; 
+    R_Note notes[100];
     int noteCount = 20;
 
     long lastTime = 2000;
 
     for (int i = 0; i < noteCount; i++) {
         notes[i].targetTime = lastTime;
-        notes[i].line = rand() % 4; 
+        notes[i].line = rand() % 4;
         notes[i].judged = 0;
         notes[i].prevY = -1;
-        
-        lastTime += 500 + (rand() % 4) * 250;
+
+        lastTime += 50 + (rand() % 3+1) * 200;
     }
 
 
@@ -717,7 +717,7 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
         do {
             valid = 1;
             x = rand() % B_WIDTH;
-            y = 5+rand() % (B_HEIGHT - 6);
+            y = 5 + rand() % (B_HEIGHT - 6);
 
             for (int w = 0; w < wallCount; w++) {
                 if (walls[w].x == x && walls[w].y == y) {
@@ -901,5 +901,4 @@ int PlayBossGame(int current_round) {
 
     return 1; // 라운드 성공
 }
-
 
