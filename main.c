@@ -77,7 +77,7 @@ int main() {
                 continue;
             }
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
-            ShowPopup("스테이지 클리어", msgBuf);*
+            ShowPopup("스테이지 클리어", msgBuf);
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
@@ -953,3 +953,4 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
