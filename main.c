@@ -70,6 +70,8 @@ int main() {
             PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
             _getch();
 
+           
+
             if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
@@ -701,7 +703,7 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
         do {
             valid = 1;
             x = rand() % B_WIDTH;
-            y = rand() % (B_HEIGHT - 1);
+            y = 5+rand() % (B_HEIGHT - 6);
 
             for (int w = 0; w < wallCount; w++) {
                 if (walls[w].x == x && walls[w].y == y) {
@@ -736,9 +738,10 @@ int PlayBossGame(int current_round) {
     int score = 0;
 
     BWall walls[] = {
-        {10,3},{15,5},{20,8},{35,6},{40,10},{45,15},{60,7},{62,8},{64,9},
-        {25,18},{30,20},{50,22},{12,12},{18,14},{22,16},{70,5},{72,9},{74,12}
+    {10,7},{15,8},{20,10},{35,9},{40,12},{45,16},{60,8},{62,9},{64,11},
+    {25,18},{30,20},{50,22},{12,13},{18,15},{22,17},{70,7},{72,10},{74,13}
     };
+
     int wallCount = sizeof(walls) / sizeof(walls[0]);
     BItem items[3];
 
@@ -804,7 +807,7 @@ int PlayBossGame(int current_round) {
                 return 0;
             }
 
-            if (nx < 0 || ny < 0 || nx >= B_WIDTH || ny >= B_HEIGHT - 1) continue;
+            if (nx < 0 || ny < 5 || nx >= B_WIDTH || ny >= B_HEIGHT - 1) continue;
             if (b_is_wall(nx, ny, walls, wallCount)) continue;
 
             if (py < B_HEIGHT - 1) {
