@@ -21,6 +21,19 @@
 #define PAIRS 5 
 #define MAX_ATTEMPTS 10
 
+#define ANSI_ITALIC_ON  "\x1b[3m"
+#define ANSI_RESET      "\x1b[0m"
+#define ANSI_BOLD_ON    "\x1b[1m"
+#define ANSI_BLINK_ON   "\x1b[5m"
+#define ANSI_CYAN_ON    "\x1b[36m"
+#define ANSI_RED_ON     "\x1b[31m"
+#define ANSI_YELLOW_ON  "\x1b[33m"
+#define ANSI_LIGHT_GRAY_ON "\x1b[90m"
+
+#define PANEL_X 22
+#define PANEL_Y 6
+#define PATTERN_Y 12
+
 int FINAL_CODE[5] = { 7, 3, 9, 1, 5 };
 
 void InitUI();
@@ -30,6 +43,14 @@ void DrawLayout(char* title, char* subtitle);
 void UpdateStatusBar(char* leftMsg, char* rightMsg);
 void ShowPopup(char* title, char* message);
 void PrintCenter(int y, char* text);
+
+void PrintTypewriter(int y, char* message, int delay_ms);
+void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active);
+void BlinkScenePanel(int y, char* text, int cycles, int speed_ms);
+void BlinkLoop(int y, char* text);
+void FadeInOutText(int y, char* text, int step_delay_ms);
+void DrawSparkEffect(int count, int duration_ms);
+
 long GetTick() { return (long)clock(); }
 
 void clear_input_buffer(void);
@@ -37,6 +58,18 @@ void init_cards(char cards[R][C], bool matched[R][C]);
 void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score);
 void get_selection(char cards[R][C], bool matched[R][C], int* r, int* c);
 void wait_for_enter(void);
+
+void PrologSequence();
+void StartSequence_Stage1();
+void StartSequence_Stage2();
+void StartSequence_Stage3();
+void StartSequence_Stage4();
+void StartSequence_Stage5();
+
+void ClearSequence_Stage1();
+void ClearSequence_Stage2();
+void ClearSequence_Stage3();
+void ClearSequence_Stage4();
 
 int PlayCardGame();
 int PlayRhythmGame();
@@ -65,41 +98,56 @@ int main() {
         }
         else if (choice == '1') {
 
-            DrawLayout("프롤로그", "아무 키나 누르세요...");
-            PrintCenter(10, "당신은 잠긴 방에서 깨어납니다...");
-            PrintCenter(12, "5개의 단서를 찾아 탈출하세요.");
-            _getch();
-
-
+            PrologSequence();
+            StartSequence_Stage1();
 
             if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
+
+            ClearSequence_Stage1();
+            
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
             ShowPopup("스테이지 클리어", msgBuf);
+
+            StartSequence_Stage2();
 
             if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
                 continue;
             }
+            
+            ClearSequence_Stage2();
+            
             sprintf(msgBuf, "두 번째 단서 획득: [ %d ]", FINAL_CODE[1]);
             ShowPopup("스테이지 클리어", msgBuf);
+
+            StartSequence_Stage3();
 
             if (PlaySequenceGame() == 0) {
                 ShowPopup("실패", "게임 오버 (3단계)");
                 continue;
             }
+
+            ClearSequence_Stage3();
+            
             sprintf(msgBuf, "세 번째 단서 획득: [ %d ]", FINAL_CODE[2]);
             ShowPopup("스테이지 클리어", msgBuf);
+
+            StartSequence_Stage4();
 
             if (PlayMemoryGame() == 0) {
                 ShowPopup("실패", "게임 오버 (4단계)");
                 continue;
             }
+
+            ClearSequence_Stage4();
+            
             sprintf(msgBuf, "네 번째 단서 획득: [ %d ]", FINAL_CODE[3]);
             ShowPopup("스테이지 클리어", msgBuf);
 
+            StartSequence_Stage5();
 
             // PlayBossGame은 3라운드 클리어 시 성공으로 간주
             int boss_success = 1;
@@ -285,10 +333,459 @@ void ShowPopup(char* title, char* message) {
     system("cls");
 }
 
+int get_visible_length(char* str) {
+    int length = 0;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '\x1b') {
+            while (str[i] != '\0' && str[i] != 'm') {
+                i++;
+            }
+            if (str[i] == 'm') {
+                continue;
+            }
+        }
+        else {
+            length++;
+        }
+    }
+    return length;
+}
+
 void PrintCenter(int y, char* text) {
-    int len = 0; while (text[len] != '\0') len++;
+    int len = get_visible_length(text);
     int x = (80 - len) / 2;
     Gotoxy(x, y); printf("%s", text);
+}
+
+void PrintTypewriter(int y, char* message, int delay_ms) {
+    int x_start = (80 - get_visible_length(message)) / 2;
+    Gotoxy(x_start, y);
+
+    for (int i = 0; message[i] != '\0'; i++) {
+        if (message[i] == '\x1b') {
+            printf("%c", message[i]);
+            while (message[i] != '\0' && message[i] != 'm') {
+                i++;
+                printf("%c", message[i]);
+            }
+        }
+        else {
+            printf("%c", message[i]);
+            Sleep(delay_ms);
+        }
+    }
+}
+
+void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active) {
+    int color = active ? COLOR_RED : COLOR_CYAN;
+    SetColor(color, COLOR_BLACK);
+
+    Gotoxy(x, y);     printf("┌───────────────────────────────────┐");
+    Gotoxy(x, y + 1); printf("│■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■│");
+    Gotoxy(x, y + 2); printf("│ ");
+    int msg_len = get_visible_length(status_msg);
+    int start_x = x + 2 + (33 - msg_len) / 2;
+    SetColor(active ? COLOR_YELLOW : COLOR_RED, COLOR_BLACK);
+    Gotoxy(start_x, y + 2); printf("%s", status_msg);
+    SetColor(color, COLOR_BLACK);
+    Gotoxy(x + 36, y + 2); printf("│");
+
+    Gotoxy(x, y + 3); printf("│                                   │");
+    Gotoxy(x, y + 4); printf("│ ■ ■ ■   ■ ■ ■   ■ ■ ■   [ENTER]   │");
+    Gotoxy(x, y + 5); printf("└───────────────────────────────────┘");
+
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+}
+
+void BlinkScenePanel(int y, char* text, int cycles, int speed_ms) {
+#define PANEL_X 22
+#define PANEL_Y y
+
+    for (int i = 0; i < cycles; i++) {
+        DrawLockPanel_Stage1(PANEL_X, PANEL_Y, "SECURITY BREACH DETECTED", true);
+
+        SetColor(COLOR_RED, COLOR_BLACK);
+        PrintCenter(PANEL_Y + 7, text);
+        Sleep(speed_ms);
+
+        DrawLockPanel_Stage1(PANEL_X, PANEL_Y, "SYSTEM OFFLINE", false);
+
+        PrintCenter(PANEL_Y + 7, "                                                         ");
+        Sleep(speed_ms);
+    }
+
+    DrawLockPanel_Stage1(PANEL_X, PANEL_Y, "INPUT REQUIRED", true);
+    SetColor(COLOR_RED, COLOR_BLACK);
+    PrintCenter(PANEL_Y + 7, text);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+}
+
+void BlinkLoop(int y, char* text) {
+#define PANEL_X 22
+#define PANEL_Y y
+
+    while (1) {
+        DrawLockPanel_Stage1(PANEL_X, PANEL_Y, "SYSTEM ONLINE / INPUT WAITING", true);
+
+        SetColor(COLOR_RED, COLOR_BLACK);
+        PrintCenter(PANEL_Y + 7, text);
+        Sleep(200);
+
+        if (_kbhit()) {
+            _getch();
+            break;
+        }
+
+        DrawLockPanel_Stage1(PANEL_X, PANEL_Y, "SYSTEM OFFLINE", false);
+
+        PrintCenter(PANEL_Y + 7, "                                                         ");
+        Sleep(200);
+
+        if (_kbhit()) {
+            _getch();
+            break;
+        }
+    }
+}
+
+void FadeInOutText(int y, char* text, int step_delay_ms) {
+    int fade_in_colors[] = { COLOR_BLACK, 8, 7 ,COLOR_YELLOW };
+    int fade_out_colors[] = { COLOR_YELLOW, 7, 8, COLOR_BLACK };
+    int steps = 4;
+
+    for (int i = 0; i < steps; i++) {
+        SetColor(fade_in_colors[i], COLOR_BLACK);
+        PrintCenter(y, text);
+        Sleep(step_delay_ms);
+    }
+
+    Sleep(step_delay_ms * 6);
+
+    for (int i = 0; i < steps; i++) {
+        SetColor(fade_out_colors[i], COLOR_BLACK);
+        PrintCenter(y, text);
+        Sleep(step_delay_ms);
+    }
+
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+}
+
+void PrologSequence() {
+    DrawLayout("PROLOG", "...");
+    FadeInOutText(12, "게임을 시작합니다...", 150);
+    PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BLINK_ON ANSI_RED_ON "System Booting . . ." ANSI_RESET, 100);
+    Sleep(500);
+    PrintCenter(16, ANSI_BLINK_ON ANSI_RED_ON "ACCESS DENIED" ANSI_RESET);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    Sleep(1500);
+
+    DrawLayout("PROLOG", "...");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(8, ANSI_ITALIC_ON "저는 당신의 " ANSI_BOLD_ON  "탈출 테스트 담당자" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 입니다.", 50);
+    PrintTypewriter(10, ANSI_ITALIC_ON "실험체 " ANSI_BOLD_ON "07"  ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON" 환영합니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "당신은 지금, 격리 시설 " ANSI_BOLD_ON "'제로 블록(Zero Block)' " ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "에 있습니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "이곳은 단순한 수용소가 아닙니다.", 50);
+    Sleep(800);
+    PrintTypewriter(16, ANSI_ITALIC_ON "당신을 관찰하고, 당신의 모든 것을 학습하며,", 50);
+    PrintTypewriter(18, ANSI_ITALIC_ON "정신적 한계를 측정하는 실험실 입니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("PROLOG", "...");
+    SetColor(COLOR_RED, COLOR_BLACK);
+    PrintCenter(12, ANSI_BOLD_ON "탈출 테스트" ANSI_RESET);
+    Sleep(800);
+
+    DrawLayout("PROLOG", "PROJECT ZERO");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "밤이 되었습니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "오늘의 '탈출 테스트'가 시작됩니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "오직 "ANSI_YELLOW_ON ANSI_BOLD_ON "단 한 번의 성공" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "만이 자유를 허락합니다.", 50);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(16, ANSI_ITALIC_ON "실패는...", 80);
+    Sleep(800);
+    PrintTypewriter(18, ANSI_ITALIC_ON "데이터화될 뿐입니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("PROLOG", "PROJECT ZERO");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(12, ANSI_ITALIC_ON "게임을 시작합니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "생존을 증명하세요.", 50);
+    Sleep(1600);
+}
+
+void StartSequence_Stage1() {
+    DrawLayout("STAGE 1: 통제 회로", "...");
+    FadeInOutText(12, "STAGE 1 : 통제 회로", 150);
+    BlinkLoop(10, ANSI_BOLD_ON "접근하려면 아무 키나 누르세요." ANSI_RESET);
+
+    DrawLayout("STAGE 1: 통제 회로", "제 1 프로토콜");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10,  "패턴을 완성하라.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "시스템이 무작위로 제시하는 숫자를 " ANSI_BOLD_ON "정확히" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "입력하세요.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "순서를 틀릴 때마다 방 안의 산소가 " ANSI_BOLD_ON "줄어들 것" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 입니다.", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    _getch();;
+}
+void ClearSequence_Stage1() {
+    DrawLayout("STAGE 1 : 통제 회로", "잠금장치 해제!");
+
+    SetColor(COLOR_GREEN, COLOR_BLACK);
+    printf(ANSI_BOLD_ON);
+    PrintCenter(10, "+----------------------------+");
+    PrintCenter(11, "|       ACCESS GRANTED       |");
+    PrintCenter(12, "+----------------------------+");
+    printf(ANSI_RESET);
+
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(15, "패널이 불안정한 녹색 빛을 뿜으며 잠금장치가 해제됩니다.", 40);
+    Sleep(1000);
+
+    DrawLayout("STAGE 1 : 통제 회로", "제 1 프로토콜 완료");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON ". . . ", 150);
+    PrintTypewriter(12, ANSI_ITALIC_ON "첫 번째 테스트 통과.", 50);
+    Sleep(800);
+
+    PrintTypewriter(14, ANSI_ITALIC_ON "흥미롭습니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON "다음 공간으로 이동하세요.", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void StartSequence_Stage2() {
+    DrawLayout("STAGE 2 : 기억의 홀", "...");
+    FadeInOutText(12, "STAGE 2 : 기억의 홀", 150);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(12, "어두운 복도를 지나자 " ANSI_BOLD_ON "'기억의 홀'" ANSI_RESET " 이라 불리는 작은 방에 도착합니다.", 40);
+    Sleep(800);
+
+    DrawLayout("STAGE 2 : 기억의 홀", "단기 잔존 시험");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "기억이 곧 존재다. 잊는 자는 사라진다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "나는 당신의 " ANSI_BOLD_ON "단기 기억 용량" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "을 측정할 것 입니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "지금부터 제시되는 무작위 숫자열을 " ANSI_BOLD_ON "완벽하게" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 기억하십시오.", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void ClearSequence_Stage2() {
+    DrawLayout("STAGE 2 : 기억의 홀", "스테이지 클리어!");
+    SetColor(COLOR_GREEN, COLOR_BLACK);
+    PrintCenter(10, ANSI_BOLD_ON "MEMORY INTEGRITY : 100%" ANSI_RESET);
+    SetColor(COLOR_RED, COLOR_BLACK);
+    PrintCenter(14, ANSI_BLINK_ON "시스템 과부하 임박");
+    Sleep(3200);
+
+    DrawLayout("STAGE 2 : 기억의 홀", "스테이지 클리어");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "기억력이 뛰어납니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "하지만, 당신의 정신이 버틸 수 있을지는. . .", 50);
+    Sleep(800);
+    PrintTypewriter(14, ANSI_ITALIC_ON "다음 단계, 통신실로 이동하세요.", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+}
+
+void StartSequence_Stage3() {
+    DrawLayout("STAGE 3 : 리듬 감시자", "...");
+    FadeInOutText(12, "STAGE 3 : 리듬 감시자", 150);
+
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(10, "감옥의 주 통신실.", 50);
+    PrintTypewriter(12, "머리 위로 작은 보안 드론들이", 50);
+    PrintTypewriter(14, "일정한 궤도로 순찰하며", 50);
+    PrintTypewriter(16, "기계음(삐, 삐, 삑-)을 내고 있습니다", 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "리듬은 곧 질서 입니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "나의 감시 드론들은 이 질서에 따라 움직인다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "당신이 이 리듬을 교란시킨다면,", 50);
+    Sleep(800);
+    PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그들의 눈을 속일 수 있을 것입니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "화면에 표시되는 간단한 리듬 패턴을", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "타이밍에 맞춰 정확히 입력해야 합니다", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void ClearSequence_Stage3() {
+    DrawLayout("STAGE 3 : 리듬 감시자", "스테이지 클리어!");
+    SetColor(COLOR_GREEN, COLOR_BLACK);
+    PrintCenter(10, ANSI_BOLD_ON "DISTURBANCE DETECTED" ANSI_RESET);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(14, "드론들의 움직임이 일제히 멈추고", 50);
+    PrintTypewriter(16, "제자리에서 요동칩니다.", 50);
+    PrintTypewriter(18, "통신실의 불빛이 순간 암전됩니다.", 50);
+    PrintTypewriter(20, "일시적인 시스템 다운입니다.", 50);
+    Sleep(800);
+
+    DrawLayout("STAGE 3 : 리듬 감시자", "스테이지 클리어!");
+    Sleep(2500);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "일시적인 오류입니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "곧 복구 됩니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "최종 데이터 저장소로 가는 문이 열렸습니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON "서두르세요!!", 25);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void StartSequence_Stage4() {
+    DrawLayout("STAGE 4 : 잔류 데이터", "...");
+    FadeInOutText(12, "STAGE 4 : 잔류 데이터", 150);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(10, "AI의 심장부, 데이터 저장소에 진입합니다.", 50);
+    PrintTypewriter(12, "방 안은 푸른 빛으로 가득하며, 수많은 홀로그램 카드들이", 50);
+    PrintTypewriter(14, "공중에 떠 있습니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "이 있습니다.", 50);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "를 모두 찾아내어", 50);
+    PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "제한 기회 내에", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "홀로그램 카드들(기억, 데이터, 숫자, 이미지 등)의", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "짝을 모두 맞춰야 합니다.", 50);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void ClearSequence_Stage4() {
+    DrawLayout("STAGE 4 : 잔류 데이터", "스테이지 클리어!");
+    SetColor(COLOR_GREEN, COLOR_BLACK);
+    PrintCenter(10, ANSI_BOLD_ON "CORE MEMORY DELETED." ANSI_RESET);
+    PrintCenter(12, "방 전체의 홀로그램 카드들이 파편처럼 깨지며 사라집니다.");
+    Sleep(1500);
+
+    DrawLayout("STAGE 4 : 잔류 데이터", "스테이지 클리어!");
+    SetColor(COLOR_RED, COLOR_BLACK);
+
+    for (int i = 0; i < 8; i++) {
+        PrintCenter(10, ANSI_BLINK_ON ANSI_RED_ON "!!! 오류! 오류! !!!" ANSI_RESET);
+        Sleep(50);
+        PrintCenter(10, "                      ");
+        Sleep(50);
+    }
+
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(13, ANSI_ITALIC_ON "비상... 비상! 탈출 경로를 차단합니다.", 40);
+    SetColor(COLOR_RED, COLOR_BLACK);
+    PrintTypewriter(15, ANSI_ITALIC_ON ANSI_BOLD_ON "넌... 결코 나를 벗어날 수 없다!" ANSI_RESET, 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 4 : 잔류 데이터", "스테이지 클리어!");
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
+    PrintCenter(10, ANSI_BLINK_ON "감옥 전체에서 '자가 파괴' 경고음이 울리기 시작합니다." ANSI_RESET);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintCenter(12, "출구로 향하는 터널이 격렬한 소리와 함께 열립니다!");
+    Sleep(1600);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+
+}
+
+void StartSequence_Stage5() {
+    DrawLayout("STAGE 5: 자유의 터널", "...");
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintTypewriter(12, "벽이 무너지고 천장에서 파이프가 떨어지는 긴 비상 탈출 터널.", 50);
+    PrintTypewriter(14, "곳곳에서 스파크가 튀고 폭발이 일어납니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("STAGE 5 : 자유의 터널", "최종 폭주 경로");
+    for (int i = 0; i < 20; i++) {
+        DrawSparkEffect(10, 50);
+    }
+    Sleep(500);
+
+    DrawLayout("STAGE 5 : 자유의 터널", "최종 폭주 경로");
+    PrintTypewriter(12, "당신의 눈앞에 출구의 희미한 " ANSI_YELLOW_ON ANSI_BOLD_ON "빛" ANSI_RESET "이 보입니다!", 50);
+    Sleep(800);
+
+    DrawLayout("STAGE 5 : 자유의 터널", "최종 폭주 경로");
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    for (int i = 0; i < 5; i++) {
+        int delay = 100 - i * 20;
+
+        PrintCenter(14, ANSI_BLINK_ON ANSI_BOLD_ON "●" ANSI_RESET);
+        Sleep(delay);
+        PrintCenter(14, " ");
+        Sleep(delay);
+    }
+
+    // 최종적으로 빛을 화면에 남깁니다. (최대 강조)
+    SetColor(COLOR_WHITE, COLOR_BLACK);
+    PrintCenter(14, ANSI_BOLD_ON "●" ANSI_RESET); // 빛의 중심 고정
+
+    Sleep(1000);
+
+    DrawLayout("STAGE 5: 자유의 터널", "최종 폭주 경로");
+    PrintCenter(12, ANSI_RED_ON "경고: 터널 붕괴 임박. 즉시 이동하십시오!" ANSI_RESET);
+    Sleep(1600);
+
+   
+    DrawLayout("STAGE 5 : 자유의 터널", "최종 폭주 경로");
+    PrintCenter(12, ANSI_BOLD_ON ANSI_RED_ON "출구를 향해 달려라!" ANSI_RESET);
+    PrintCenter(14, ANSI_BOLD_ON ANSI_RED_ON "최종 탈출을 시작하세요!!!!!!!" ANSI_RESET);
+    Sleep(1000);
+    PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
+    _getch();
+}
+
+void DrawSparkEffect(int count, int duration_ms) {
+    #define SPARK_X_MIN 2
+    #define SPARK_X_MAX 77 
+    #define SPARK_Y_MIN 5  
+    #define SPARK_Y_MAX 23 
+
+    int* x_pos = (int*)malloc(count * sizeof(int));
+    int* y_pos = (int*)malloc(count * sizeof(int));
+
+    if (x_pos == NULL || y_pos == NULL) {
+        printf("메모리 할당 실패\n");
+        if (x_pos) free(x_pos);
+        if (y_pos) free(y_pos);
+        return;
+    }
+
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
+
+    for (int i = 0; i < count; i++) {
+        x_pos[i] = SPARK_X_MIN + rand() % (SPARK_X_MAX - SPARK_X_MIN);
+        y_pos[i] = SPARK_Y_MIN + rand() % (SPARK_Y_MAX - SPARK_Y_MIN);
+
+        Gotoxy(x_pos[i], y_pos[i]);
+        printf("†");
+    }
+    Sleep(duration_ms);
+
+    for (int i = 0; i < count; i++) {
+        Gotoxy(x_pos[i], y_pos[i]);
+        printf(" ");
+    }
+    free(x_pos);
+    free(y_pos);
+
+    SetColor(COLOR_WHITE, COLOR_BLACK);
 }
 
 int PlayCardGame() {
@@ -969,4 +1466,5 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
