@@ -101,7 +101,7 @@ int main() {
             PrologSequence();
             StartSequence_Stage1();
 
-            if (PlayCardGame() == 0) {
+            if (PlaySequenceGame() == 0) {
                 ShowPopup("실패", "게임 오버 (1단계)");
                 continue;
             }
@@ -113,7 +113,7 @@ int main() {
 
             StartSequence_Stage2();
 
-            if (PlayRhythmGame() == 0) {
+            if (PlayMemoryGame() == 0) {
                 ShowPopup("실패", "게임 오버 (2단계)");
                 continue;
             }
@@ -125,7 +125,7 @@ int main() {
 
             StartSequence_Stage3();
 
-            if (PlaySequenceGame() == 0) {
+            if (PlayRhythmGame() == 0) {
                 ShowPopup("실패", "게임 오버 (3단계)");
                 continue;
             }
@@ -137,7 +137,7 @@ int main() {
 
             StartSequence_Stage4();
 
-            if (PlayMemoryGame() == 0) {
+            if (PlayCardGame() == 0) {
                 ShowPopup("실패", "게임 오버 (4단계)");
                 continue;
             }
@@ -1466,5 +1466,6 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
