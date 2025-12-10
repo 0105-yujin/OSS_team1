@@ -519,9 +519,8 @@ void PrologSequence() {
     PrintTypewriter(12, ANSI_ITALIC_ON "오늘의 '탈출 테스트'가 시작됩니다.", 50);
     PrintTypewriter(14, ANSI_ITALIC_ON "오직 "ANSI_YELLOW_ON ANSI_BOLD_ON "단 한 번의 성공" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "만이 자유를 허락합니다.", 50);
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintTypewriter(16, ANSI_ITALIC_ON "실패는...", 80);
-    Sleep(800);
-    PrintTypewriter(18, ANSI_ITALIC_ON "데이터화될 뿐입니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON "실패는 데이터화될 뿐입니다.", 50);
+    
     Sleep(1600);
 
     DrawLayout("PROLOG", "PROJECT ZERO");
@@ -581,7 +580,7 @@ void StartSequence_Stage2() {
 
     DrawLayout("STAGE 2 : 기억의 홀", "단기 잔존 시험");
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintTypewriter(10, ANSI_ITALIC_ON "기억이 곧 존재다. 잊는 자는 사라진다.", 50);
+    PrintTypewriter(10, ANSI_ITALIC_ON "\"기억이 곧 존재다. 잊는 자는 사라진다.\"", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "나는 당신의 " ANSI_BOLD_ON "단기 기억 용량" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "을 측정할 것 입니다.", 50);
     PrintTypewriter(14, ANSI_ITALIC_ON "지금부터 제시되는 무작위 숫자열을 " ANSI_BOLD_ON "완벽하게" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 기억하십시오.", 50);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
@@ -592,7 +591,7 @@ void StartSequence_Stage2() {
 void ClearSequence_Stage2() {
     DrawLayout("STAGE 2 : 기억의 홀", "스테이지 클리어!");
     SetColor(COLOR_GREEN, COLOR_BLACK);
-    PrintCenter(10, ANSI_BOLD_ON "MEMORY INTEGRITY : 100%" ANSI_RESET);
+    PrintCenter(10, ANSI_BOLD_ON "MEMORY INTEGRITY : 99%" ANSI_RESET);
     SetColor(COLOR_RED, COLOR_BLACK);
     PrintCenter(14, ANSI_BLINK_ON "시스템 과부하 임박");
     Sleep(3200);
@@ -614,18 +613,18 @@ void StartSequence_Stage3() {
     SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(10, "감옥의 주 통신실.", 50);
     PrintTypewriter(12, "머리 위로 작은 보안 드론들이", 50);
-    PrintTypewriter(14, "일정한 궤도로 순찰하며", 50);
-    PrintTypewriter(16, "기계음을 내고 있습니다", 50);
+    PrintTypewriter(14, "기계음을 내며", 50);
+    PrintTypewriter(16, "일정한 궤도로 순찰하는것이 보입니다", 50);
     Sleep(1600);
 
     DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintTypewriter(10, ANSI_ITALIC_ON "리듬은 곧 질서 입니다.", 50);
+    PrintTypewriter(10, ANSI_ITALIC_ON "박자는 곧 질서 입니다.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "저의 감시 드론들은 이 질서에 따라 움직입니다.", 50);
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(14, ANSI_ITALIC_ON "당신이 이 리듬을 교란시킨다면,", 50);
     Sleep(800);
-    PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그들의 눈을 속일 수 있을 것입니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그의 눈을 속일 수 있을껍니다.", 50);
     Sleep(1600);
 
     DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
@@ -653,9 +652,10 @@ void ClearSequence_Stage3() {
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "일시적인 오류입니다.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "곧 복구 됩니다.", 50);
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(14, ANSI_ITALIC_ON "최종 데이터 저장소로 가는 문이 열렸습니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON "서두르세요!!", 25);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
     _getch();
 
@@ -671,10 +671,10 @@ void StartSequence_Stage4() {
     Sleep(1600);
 
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "이 있습니다.", 50);
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "를 모두 찾아내어", 50);
     PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
@@ -716,9 +716,10 @@ void ClearSequence_Stage4() {
     DrawLayout("STAGE 4 : 잔류 데이터", "스테이지 클리어!");
     SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintCenter(10, ANSI_BLINK_ON "감옥 전체에서 '자가 파괴' 경고음이 울리기 시작합니다." ANSI_RESET);
-    SetColor(COLOR_WHITE, COLOR_BLACK);
-    PrintCenter(12, "출구로 향하는 터널이 격렬한 소리와 함께 열립니다!");
+    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    PrintCenter(12, "출구로 향하는 터널이 열렸습니다!");
     Sleep(1600);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
     _getch();
 
@@ -1512,6 +1513,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
