@@ -392,7 +392,7 @@ void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active) {
     SetColor(active ? COLOR_YELLOW : COLOR_RED, COLOR_BLACK);
     Gotoxy(start_x, y + 2); printf("%s", status_msg);
     SetColor(color, COLOR_BLACK);
-    Gotoxy(x + 36, y + 2); printf("│");
+    Gotoxy(x + 36, y + 2); printf("|");
 
     Gotoxy(x, y + 3); printf("|                                   |");
     Gotoxy(x, y + 4); printf("| ? ? ?   ? ? ?   ? ? ?   [ENTER]   |");
@@ -1470,6 +1470,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
