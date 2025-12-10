@@ -83,10 +83,10 @@ int main() {
     InitUI();
     srand((unsigned int)time(NULL));
 
-    for(int i=0; i < 5; i++) {
-    FINAL_CODE[i] = rand() % 10; 
+    for (int i = 0; i < 5; i++) {
+        FINAL_CODE[i] = rand() % 10;
     }
-    
+
     char msgBuf[100];
 
     while (1) {
@@ -111,7 +111,7 @@ int main() {
             }
 
             ClearSequence_Stage1();
-            
+
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -121,9 +121,9 @@ int main() {
                 ShowPopup("실패", "게임 오버 (2단계)");
                 continue;
             }
-            
+
             ClearSequence_Stage2();
-            
+
             sprintf(msgBuf, "두 번째 단서 획득: [ %d ]", FINAL_CODE[1]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -135,7 +135,7 @@ int main() {
             }
 
             ClearSequence_Stage3();
-            
+
             sprintf(msgBuf, "세 번째 단서 획득: [ %d ]", FINAL_CODE[2]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -147,7 +147,7 @@ int main() {
             }
 
             ClearSequence_Stage4();
-            
+
             sprintf(msgBuf, "네 번째 단서 획득: [ %d ]", FINAL_CODE[3]);
             ShowPopup("스테이지 클리어", msgBuf);
 
@@ -392,7 +392,7 @@ void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active) {
     SetColor(active ? COLOR_YELLOW : COLOR_RED, COLOR_BLACK);
     Gotoxy(start_x, y + 2); printf("%s", status_msg);
     SetColor(color, COLOR_BLACK);
-    Gotoxy(x + 36, y + 2); printf("|");
+    Gotoxy(x + 36, y + 2); printf("│");
 
     Gotoxy(x, y + 3); printf("|                                   |");
     Gotoxy(x, y + 4); printf("| ? ? ?   ? ? ?   ? ? ?   [ENTER]   |");
@@ -524,7 +524,7 @@ void StartSequence_Stage1() {
 
     DrawLayout("STAGE 1: 통제 회로", "제 1 프로토콜");
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintTypewriter(10,  "패턴을 완성하라.", 50);
+    PrintTypewriter(10, "패턴을 완성하라.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "시스템이 무작위로 제시하는 숫자를 " ANSI_BOLD_ON "정확히" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "입력하세요.", 50);
     PrintTypewriter(14, ANSI_ITALIC_ON "순서를 틀릴 때마다 방 안의 산소가 " ANSI_BOLD_ON "줄어들 것" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 입니다.", 50);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
@@ -586,7 +586,7 @@ void ClearSequence_Stage2() {
     DrawLayout("STAGE 2 : 기억의 홀", "스테이지 클리어");
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "기억력이 뛰어납니다.", 50);
-    PrintTypewriter(12, ANSI_ITALIC_ON "하지만, 당신의 정신이 버틸 수 있을지는. . .", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "하지만, 당신의 정신이 끝까지 버틸 수 있을지는. . .", 50);
     Sleep(800);
     PrintTypewriter(14, ANSI_ITALIC_ON "다음 단계, 통신실로 이동하세요.", 50);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
@@ -601,13 +601,14 @@ void StartSequence_Stage3() {
     PrintTypewriter(10, "감옥의 주 통신실.", 50);
     PrintTypewriter(12, "머리 위로 작은 보안 드론들이", 50);
     PrintTypewriter(14, "일정한 궤도로 순찰하며", 50);
-    PrintTypewriter(16, "기계음(삐, 삐, 삑-)을 내고 있습니다", 50);
+    PrintTypewriter(16, "기계음을 내고 있습니다", 50);
     Sleep(1600);
 
     DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "리듬은 곧 질서 입니다.", 50);
-    PrintTypewriter(12, ANSI_ITALIC_ON "나의 감시 드론들은 이 질서에 따라 움직인다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "저의 감시 드론들은 이 질서에 따라 움직입니다.", 50);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "당신이 이 리듬을 교란시킨다면,", 50);
     Sleep(800);
     PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그들의 눈을 속일 수 있을 것입니다.", 50);
@@ -638,6 +639,7 @@ void ClearSequence_Stage3() {
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "일시적인 오류입니다.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "곧 복구 됩니다.", 50);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "최종 데이터 저장소로 가는 문이 열렸습니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON "서두르세요!!", 25);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
@@ -655,17 +657,17 @@ void StartSequence_Stage4() {
     Sleep(1600);
 
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
-    SetColor(COLOR_CYAN, COLOR_BLACK);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "이 있습니다.", 50);
-    SetColor(COLOR_CYAN, COLOR_BLACK);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "를 모두 찾아내어", 50);
     PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
     Sleep(1600);
 
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
-    SetColor(COLOR_CYAN, COLOR_BLACK);
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "제한 기회 내에", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "홀로그램 카드들(기억, 데이터, 숫자, 이미지 등)의", 50);
     PrintTypewriter(14, ANSI_ITALIC_ON "짝을 모두 맞춰야 합니다.", 50);
@@ -746,7 +748,7 @@ void StartSequence_Stage5() {
     PrintCenter(12, ANSI_RED_ON "경고: 터널 붕괴 임박. 즉시 이동하십시오!" ANSI_RESET);
     Sleep(1600);
 
-   
+
     DrawLayout("STAGE 5 : 자유의 터널", "최종 폭주 경로");
     PrintCenter(12, ANSI_BOLD_ON ANSI_RED_ON "출구를 향해 달려라!" ANSI_RESET);
     PrintCenter(14, ANSI_BOLD_ON ANSI_RED_ON "최종 탈출을 시작하세요!!!!!!!" ANSI_RESET);
@@ -756,10 +758,10 @@ void StartSequence_Stage5() {
 }
 
 void DrawSparkEffect(int count, int duration_ms) {
-    #define SPARK_X_MIN 2
-    #define SPARK_X_MAX 77 
-    #define SPARK_Y_MIN 5  
-    #define SPARK_Y_MAX 23 
+#define SPARK_X_MIN 2
+#define SPARK_X_MAX 77 
+#define SPARK_Y_MIN 5  
+#define SPARK_Y_MAX 23 
 
     int* x_pos = (int*)malloc(count * sizeof(int));
     int* y_pos = (int*)malloc(count * sizeof(int));
@@ -938,7 +940,7 @@ int PlayRhythmGame() {
         notes[i].judged = 0;
         notes[i].prevY = -1;
 
-        lastTime += 50 + (rand() % 3+1) * 200;
+        lastTime += 50 + (rand() % 3 + 1) * 200;
     }
 
 
@@ -972,24 +974,24 @@ int PlayRhythmGame() {
         if (_kbhit()) {
             int key = _getch();
             int line = -1;
-            
-            
-            if (key == 'd' || key == 'D') { 
-                line = 0; 
-                Beep(262, 50); 
-            } 
-            else if (key == 'f' || key == 'F') { 
-                line = 1; 
-                Beep(294, 50); 
-            } 
-            else if (key == 'j' || key == 'J') { 
-                line = 2; 
-                Beep(330, 50); 
-            } 
-            else if (key == 'k' || key == 'K') { 
-                line = 3; 
-                Beep(349, 50); 
-            } 
+
+
+            if (key == 'd' || key == 'D') {
+                line = 0;
+                Beep(262, 50);
+            }
+            else if (key == 'f' || key == 'F') {
+                line = 1;
+                Beep(294, 50);
+            }
+            else if (key == 'j' || key == 'J') {
+                line = 2;
+                Beep(330, 50);
+            }
+            else if (key == 'k' || key == 'K') {
+                line = 3;
+                Beep(349, 50);
+            }
             else if (key == 'q' || key == 'Q') { gameRunning = 0; break; }
 
             if (line != -1) {
@@ -1470,8 +1472,6 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
-
-
 
 
 
