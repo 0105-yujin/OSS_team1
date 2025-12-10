@@ -1513,6 +1513,13 @@ int PlayBossGame(int current_round) {
     return 1;
 }
 
+void gotoxy(int x, int y) {
+    COORD pos = { (SHORT)x, (SHORT)y };
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+
+
 int ESCape(void) {
 
     system("mode con: cols=80 lines=25");
@@ -1651,6 +1658,7 @@ int ESCape(void) {
 
     return 0;
 }
+
 
 
 
