@@ -111,7 +111,7 @@ int main() {
                 continue;
             }
 
-           ClearSequence_Stage1();
+            ClearSequence_Stage1();
 
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
             ShowPopup("스테이지 클리어", msgBuf);
@@ -135,7 +135,7 @@ int main() {
                 continue;
             }
 
-           ClearSequence_Stage3();
+            ClearSequence_Stage3();
 
             sprintf(msgBuf, "세 번째 단서 획득: [ %d ]", FINAL_CODE[2]);
             ShowPopup("스테이지 클리어", msgBuf);
@@ -167,6 +167,8 @@ int main() {
                 ShowPopup("실패", "게임 오버 (5단계)");
                 continue;
             }
+
+            Sleep(2000);
 
             sprintf(msgBuf, "마지막 단서 획득: [ %d ]", FINAL_CODE[4]);
             ShowPopup("스테이지 클리어", msgBuf);
@@ -210,12 +212,14 @@ int main() {
                     PrintCenter(20, "팀원: 홍유진, 김장혁, 이동호, 팽선우");
                     PrintCenter(22, "플레이해주셔서 감사합니다.");
                     _getch();
+
+                    Epilogue();
                 }
                 else {
                     ShowPopup("경고", "비밀번호가 틀렸습니다! 처음으로 돌아갑니다.");
                 }
 
-                Epilogue();
+                
             }
 
             while (getchar() != '\n');
@@ -621,7 +625,7 @@ void StartSequence_Stage3() {
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "박자는 곧 질서 입니다.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "저의 감시 드론들은 이 질서에 따라 움직입니다.", 50);
-    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "당신이 이 리듬을 교란시킨다면,", 50);
     Sleep(800);
     PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그의 눈을 속일 수 있을것입니다.", 50);
@@ -653,7 +657,7 @@ void ClearSequence_Stage3() {
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "일시적인 오류입니다.", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "곧 복구 됩니다.", 50);
-    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "최종 데이터 저장소로 가는 문이 열렸습니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON "서두르세요!!", 25);
     SetColor(COLOR_WHITE, COLOR_BLACK);
@@ -672,12 +676,12 @@ void StartSequence_Stage4() {
     Sleep(1600);
 
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
-    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
-    PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록이 있습니다.", 50);
-    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    PrintTypewriter(12, ANSI_ITALIC_ON  "'제로 블록'의 진정한 기록이 있습니다.", 50);
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
-    PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드를 모두 찾아내어", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON  "짝이 맞는 카드를 모두 찾아내어", 50);
     PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
     Sleep(1600);
     SetColor(COLOR_WHITE, COLOR_BLACK);
@@ -717,7 +721,7 @@ void ClearSequence_Stage4() {
     DrawLayout("STAGE 4 : 잔류 데이터", "스테이지 클리어!");
     SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintCenter(10, ANSI_BLINK_ON "감옥 전체에서 '자가 파괴' 경고음이 울리기 시작합니다." ANSI_RESET);
-    SetColor(COLOR_BLACK, COLOR_YELLOW);
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintCenter(12, "출구로 향하는 터널이 열렸습니다!");
     Sleep(1600);
     SetColor(COLOR_WHITE, COLOR_BLACK);
@@ -1514,7 +1518,6 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
-
 
 
 
