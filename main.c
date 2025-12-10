@@ -170,7 +170,7 @@ int main() {
 
             sprintf(msgBuf, "마지막 단서 획득: [ %d ]", FINAL_CODE[4]);
             ShowPopup("스테이지 클리어", msgBuf);
-
+            Sleep(1500);
 
             DrawLayout("최종 관문", "도어락 비밀번호를 입력하세요");
             PrintCenter(8, "획득한 단서를 순서대로 입력하세요.");
@@ -1512,6 +1512,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
