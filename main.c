@@ -580,7 +580,7 @@ void StartSequence_Stage2() {
 
     DrawLayout("STAGE 2 : 기억의 홀", "단기 잔존 시험");
     SetColor(COLOR_CYAN, COLOR_BLACK);
-    PrintTypewriter(10, ANSI_ITALIC_ON "\"기억이 곧 존재다. 잊는 자는 사라진다.\"", 50);
+    PrintTypewriter(10, ANSI_ITALIC_ON "\"기억이 곧 존재다. 잊힌 자는 사라진다.\"", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON "나는 당신의 " ANSI_BOLD_ON "단기 기억 용량" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "을 측정할 것 입니다.", 50);
     PrintTypewriter(14, ANSI_ITALIC_ON "지금부터 제시되는 무작위 숫자열을 " ANSI_BOLD_ON "완벽하게" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON " 기억하십시오.", 50);
     PrintCenter(20, ANSI_LIGHT_GRAY_ON "계속하려면 아무 키나 누르세요...");
@@ -1514,6 +1514,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
