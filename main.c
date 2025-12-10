@@ -70,6 +70,7 @@ void ClearSequence_Stage1();
 void ClearSequence_Stage2();
 void ClearSequence_Stage3();
 void ClearSequence_Stage4();
+void Epilogue();
 
 int PlayCardGame();
 int PlayRhythmGame();
@@ -206,13 +207,15 @@ int main() {
                     PrintCenter(18, "  ##     ##    #   #  #      ####   ####     #    ####  ");
                     
                     SetColor(COLOR_WHITE, COLOR_BLACK);
-                    PrintCenter(15, "팀원: 홍유진, 김장혁, 이동호, 팽선우");
-                    PrintCenter(17, "플레이해주셔서 감사합니다.");
+                    PrintCenter(20, "팀원: 홍유진, 김장혁, 이동호, 팽선우");
+                    PrintCenter(22, "플레이해주셔서 감사합니다.");
                     _getch();
                 }
                 else {
                     ShowPopup("경고", "비밀번호가 틀렸습니다! 처음으로 돌아갑니다.");
                 }
+
+                Epilogue();
             }
 
             while (getchar() != '\n');
@@ -804,6 +807,32 @@ void DrawSparkEffect(int count, int duration_ms) {
 
     SetColor(COLOR_WHITE, COLOR_BLACK);
 }
+
+void Epilogue() {
+    DrawLayout("에필로그", "...");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(8, ANSI_ITALIC_ON "실험체 " ANSI_BOLD_ON "07"  ANSI_RESET, 50);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(10, ANSI_ITALIC_ON "탈출 성공", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON "당신은 주어진 모든 테스트를 완벽하게 수행했습니다.", 50);
+    PrintTypewriter(14, ANSI_ITALIC_ON "축하드립니다.", 50);
+    Sleep(1300);
+
+    DrawLayout("에필로그", "...");
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(8, ANSI_ITALIC_ON "당신은 현재", 50);
+    PrintTypewriter(10, ANSI_ITALIC_ON ANSI_BOLD_ON "'A-등급 지능형 탈출자(A-Class Intelligent Escapee)'" ANSI_RESET, 50);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
+    PrintTypewriter(12, ANSI_ITALIC_ON " 로 분류되었습니다.", 50);
+    Sleep(500);
+    PrintTypewriter(14, ANSI_ITALIC_ON "다음 단계의 데이터 수집을 시작합니다.", 50);
+    Sleep(1600);
+
+    DrawLayout("에필로그", "...");
+    SetColor(COLOR_YELLOW, COLOR_BLACK);
+    FadeInOutText(12, "[PROJECT ZERO : To Be Continued]", 150);
+    Sleep(300);
+};
 
 int PlayCardGame() {
     DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
@@ -1483,6 +1512,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
