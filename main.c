@@ -190,12 +190,23 @@ int main() {
                     ShowPopup("잠금 해제", "철컥! 문이 열립니다...");
 
                     DrawLayout("탈출 성공!", "축하합니다!");
-                    SetColor(COLOR_GREEN, COLOR_BLACK);
-                    PrintCenter(10, "#################################");
-                    PrintCenter(11, "#       MISSION COMPLETE        #");
-                    PrintCenter(12, "#################################");
+                    SetColor(COLOR_YELLOW, COLOR_BLACK);
+                    PrintCenter(6, " #   #  ###     ##     ##    ###     ##    #  #  ");
+                    PrintCenter(7, " ## ##   #     #  #   #  #    #     #  #   ## #  ");
+                    PrintCenter(8, " # # #   #      #      #      #     #  #   # ##  ");
+                    PrintCenter(9, " # # #   #       #      #     #     #  #   #  #  ");
+                    PrintCenter(10, " #   #   #     #  #   #  #    #     #  #   #  #  ");
+                    PrintCenter(11, " #   #  ###     ##     ##    ###     ##    #  #  ");
+
+                    PrintCenter(13, "  ##     ##    #   #  ###    #      ####   #####  ####  ");
+                    PrintCenter(14, " #  #   #  #   ## ##  #  #   #      #        #    #     ");
+                    PrintCenter(15, " #      #  #   # # #  #  #   #      ###      #    ###   ");
+                    PrintCenter(16, " #      #  #   # # #  ###    #      #        #    #     ");
+                    PrintCenter(17, " #  #   #  #   #   #  #      #      #        #    #     ");
+                    PrintCenter(18, "  ##     ##    #   #  #      ####   ####     #    ####  ");
+                    
                     SetColor(COLOR_WHITE, COLOR_BLACK);
-                    PrintCenter(15, "팀원: 홍유진, 김명동, 김장혁, 이동호, 팽선우");
+                    PrintCenter(15, "팀원: 홍유진, 김장혁, 이동호, 팽선우");
                     PrintCenter(17, "플레이해주셔서 감사합니다.");
                     _getch();
                 }
@@ -1472,6 +1483,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
