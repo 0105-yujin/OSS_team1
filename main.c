@@ -77,7 +77,7 @@ int PlayRhythmGame();
 int PlaySequenceGame();
 int PlayMemoryGame();
 int PlayBossGame(int current_round); // 매개변수 추가 (원래 코드 구조에 맞춤)
-
+int ESCape();
 int main() {
 
     system("cls");
@@ -189,7 +189,7 @@ int main() {
 
                 if (inputCode == correctCode) {
                     ShowPopup("잠금 해제", "철컥! 문이 열립니다...");
-
+                    ESCape();
                     DrawLayout("탈출 성공!", "축하합니다!");
                     SetColor(COLOR_YELLOW, COLOR_BLACK);
                     PrintCenter(6, " #   #  ###     ##     ##    ###     ##    #  #  ");
@@ -1512,6 +1512,154 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
+int ESCape(void) {
+
+    system("mode con: cols=80 lines=25");
+    srand((unsigned)time(NULL));
+
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(hOut, &csbi);
+    WORD defaultAttr = csbi.wAttributes;
+
+    int W = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    int H = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+    int gapWidth = 6;
+
+    int leftWallX = (W - gapWidth) / 2 - 1;
+    int rightWallX = leftWallX + gapWidth + 1;
+    int pathX = leftWallX + (gapWidth / 2) + 1;
+
+    int topY = 1;
+    int bottomY = H - 3;
+
+    int delayMs = 120;
+
+    WORD red = FOREGROUND_RED | FOREGROUND_INTENSITY;
+    WORD white = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
+    WORD green = FOREGROUND_GREEN | FOREGROUND_INTENSITY;
+
+    // 벽
+    SetConsoleTextAttribute(hOut, red);
+    for (int y = topY; y <= bottomY; y++) {
+        gotoxy(leftWallX, y); putchar('|');
+        gotoxy(rightWallX, y); putchar('|');
+    }
+
+    // 장애물
+    int obstacleCount = 120;
+    SetConsoleTextAttribute(hOut, green);
+    for (int i = 0; i < obstacleCount; i++) {
+
+        int oy = rand() % (bottomY - topY + 1) + topY;
+        int ox;
+
+        while (1) {
+            ox = rand() % W;
+            if (ox >= leftWallX + 1 && ox <= rightWallX - 1) continue;
+            if (ox == leftWallX || ox == rightWallX) continue;
+            break;
+        }
+        char block = (rand() % 2 == 0 ? '#' : '@');
+
+        gotoxy(ox, oy);
+        putchar(block);
+    }
+    // 추격자 X 위치 초기화
+    int xx = pathX;       // X의 x 좌표
+    int xy = topY - 2;    // X의 시작 y
+    int xAppeared = 0;    // X 등장 여부 플래그
+
+    // O 이동 + X 추격
+    for (int y = topY; y <= bottomY; y++) {
+
+        // O 이전 위치 지움
+        if (y > topY) {
+            gotoxy(pathX, y - 1);
+            putchar(' ');
+        }
+
+        // X 이전 위치 지움 (화면에 등장했을 때만)
+        if (xAppeared && xy >= topY - 2) {
+            gotoxy(xx, xy);
+            putchar(' ');
+        }
+
+        // O 그리기
+        SetConsoleTextAttribute(hOut, white);
+        gotoxy(pathX, y);
+        putchar('O');
+
+        // ====== O가 7칸 내려오면 X 등장 ======
+        if (!xAppeared && y >= topY + 7) {
+            xAppeared = 1;   // X 생성 시작
+        }
+
+        // ====== X 추격 시작 (등장 후부터만) ======
+        if (xAppeared) {
+
+            // X가 O의 x로 접근
+            if (xx < pathX) xx++;
+            else if (xx > pathX) xx--;
+
+            // X는 O보다 7칸 위에서 따라오도록
+            if (xy < y - 7) xy++;
+
+            // X 그리기
+            SetConsoleTextAttribute(hOut, red);
+            gotoxy(xx, xy);
+            putchar('X');
+        }
+
+        Sleep(delayMs);
+    }
+
+    // 마지막 O 지우기
+    gotoxy(pathX, bottomY); putchar(' ');
+
+    SetConsoleTextAttribute(hOut, defaultAttr);
+    gotoxy(0, bottomY + 2);
+    Sleep(2000);
+    // ===== 애니메이션 종료 후 X를 위로 올리기 =====
+    if (xAppeared) {
+
+        // X를 위쪽으로 부드럽게 올리기
+        while (xy >= topY - 2) {
+
+            // 이전 X 지우기
+            gotoxy(xx, xy);
+            putchar(' ');
+
+            xy--;  // 위로 이동
+
+            // 새 X 그리기
+            SetConsoleTextAttribute(hOut, red);
+            if (xy >= topY - 2) {
+                gotoxy(xx, xy);
+                putchar('X');
+            }
+
+            Sleep(400); // 올라가는 속도
+        }
+    }
+
+
+
+
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
 
 
 
