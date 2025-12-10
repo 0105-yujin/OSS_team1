@@ -241,12 +241,12 @@ void draw_board(char cards[R][C], bool matched[R][C], int attempts, int score) {
     printf("\n");
     for (int i = 0; i < R; i++) {
         printf("%d", i + 1);
-        printf("┌───┐ ┌───┐ ┌───┐ ┌───┐ ┌───┐\n");
+        printf("+---+ +---+ +---+ +---+ +---+\n");
         for (int j = 0; j < C; j++) {
-            printf(" │ %c │", matched[i][j] ? cards[i][j] : '?');
+            printf(" | %c |", matched[i][j] ? cards[i][j] : '?');
         }
         printf("\n");
-        printf(" └───┘ └───┘ └───┘ └───┘ └───┘\n");
+        printf(" +---+ +---+ +---+ +---+ +---+\n");
     }
 }
 
@@ -380,9 +380,9 @@ void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active) {
     int color = active ? COLOR_RED : COLOR_CYAN;
     SetColor(color, COLOR_BLACK);
 
-    Gotoxy(x, y);     printf("┌───────────────────────────────────┐");
-    Gotoxy(x, y + 1); printf("│???????????????????????????????????│");
-    Gotoxy(x, y + 2); printf("│ ");
+    Gotoxy(x, y);     printf("+-----------------------------------+");
+    Gotoxy(x, y + 1); printf("|???????????????????????????????????|");
+    Gotoxy(x, y + 2); printf("| ");
     int msg_len = get_visible_length(status_msg);
     int start_x = x + 2 + (33 - msg_len) / 2;
     SetColor(active ? COLOR_YELLOW : COLOR_RED, COLOR_BLACK);
@@ -390,9 +390,9 @@ void DrawLockPanel_Stage1(int x, int y, char* status_msg, bool active) {
     SetColor(color, COLOR_BLACK);
     Gotoxy(x + 36, y + 2); printf("│");
 
-    Gotoxy(x, y + 3); printf("│                                   │");
-    Gotoxy(x, y + 4); printf("│ ? ? ?   ? ? ?   ? ? ?   [ENTER]   │");
-    Gotoxy(x, y + 5); printf("└───────────────────────────────────┘");
+    Gotoxy(x, y + 3); printf("|                                   |");
+    Gotoxy(x, y + 4); printf("| ? ? ?   ? ? ?   ? ? ?   [ENTER]   |");
+    Gotoxy(x, y + 5); printf("+-----------------------------------+");
 
     SetColor(COLOR_WHITE, COLOR_BLACK);
 }
@@ -818,7 +818,7 @@ int PlayCardGame() {
 
             // 1. 윗면 (흰색 고정)
             SetColor(COLOR_WHITE, COLOR_BLACK);
-            Gotoxy(x, y); printf("┌───┐");
+            Gotoxy(x, y); printf("+---+");
 
             // 2. 중간면 (벽은 흰색, 내용만 색상 변경)
             Gotoxy(x, y + 1);
@@ -832,7 +832,7 @@ int PlayCardGame() {
             SetColor(COLOR_WHITE, COLOR_BLACK); printf(" |"); // 오른쪽 벽
 
             // 3. 아랫면 (흰색 고정)
-            Gotoxy(x, y + 2); printf("└───┘");
+            Gotoxy(x, y + 2); printf("+---+");
 
             // 번호 (흰색 고정)
             Gotoxy(x + 2, y + 3);
@@ -889,9 +889,9 @@ int PlayCardGame() {
                 int y = 7 + row * 6;
 
                 SetColor(revealed[idx] ? COLOR_CYAN : COLOR_WHITE, COLOR_BLACK);
-                Gotoxy(x, y); printf("┌───┐");
+                Gotoxy(x, y); printf("+---+");
                 Gotoxy(x, y + 1); printf("| %c |", revealed[idx] ? '0' + cards[idx] : '?');
-                Gotoxy(x, y + 2); printf("└───┘");
+                Gotoxy(x, y + 2); printf("+---+");
                 Gotoxy(x + 2, y + 3); printf("%d", (idx + 1) % 10);
             }
         }
@@ -1466,6 +1466,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
