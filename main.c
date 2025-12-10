@@ -626,7 +626,7 @@ void StartSequence_Stage3() {
     Sleep(800);
     PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그의 눈을 속일 수 있을껍니다.", 50);
     Sleep(1600);
-
+    SetColor(COLOR_CYAN, COLOR_BLACK);
     DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "화면에 표시되는 간단한 리듬 패턴을", 50);
@@ -1513,6 +1513,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
