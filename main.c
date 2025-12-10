@@ -111,7 +111,7 @@ int main() {
                 continue;
             }
 
-            ClearSequence_Stage1();
+           ClearSequence_Stage1();
 
             sprintf(msgBuf, "첫 번째 단서 획득: [ %d ]", FINAL_CODE[0]);
             ShowPopup("스테이지 클리어", msgBuf);
@@ -135,7 +135,7 @@ int main() {
                 continue;
             }
 
-            ClearSequence_Stage3();
+           ClearSequence_Stage3();
 
             sprintf(msgBuf, "세 번째 단서 획득: [ %d ]", FINAL_CODE[2]);
             ShowPopup("스테이지 클리어", msgBuf);
@@ -205,7 +205,7 @@ int main() {
                     PrintCenter(16, " #      #  #   # # #  ###    #      #        #    #     ");
                     PrintCenter(17, " #  #   #  #   #   #  #      #      #        #    #     ");
                     PrintCenter(18, "  ##     ##    #   #  #      ####   ####     #    ####  ");
-                    
+
                     SetColor(COLOR_WHITE, COLOR_BLACK);
                     PrintCenter(20, "팀원: 홍유진, 김장혁, 이동호, 팽선우");
                     PrintCenter(22, "플레이해주셔서 감사합니다.");
@@ -520,7 +520,7 @@ void PrologSequence() {
     PrintTypewriter(14, ANSI_ITALIC_ON "오직 "ANSI_YELLOW_ON ANSI_BOLD_ON "단 한 번의 성공" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "만이 자유를 허락합니다.", 50);
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(16, ANSI_ITALIC_ON "실패는 데이터화될 뿐입니다.", 50);
-    
+
     Sleep(1600);
 
     DrawLayout("PROLOG", "PROJECT ZERO");
@@ -624,9 +624,10 @@ void StartSequence_Stage3() {
     SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(14, ANSI_ITALIC_ON "당신이 이 리듬을 교란시킨다면,", 50);
     Sleep(800);
-    PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그의 눈을 속일 수 있을껍니다.", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON "잠시 동안 그의 눈을 속일 수 있을것입니다.", 50);
     Sleep(1600);
     SetColor(COLOR_CYAN, COLOR_BLACK);
+
     DrawLayout("STAGE 3 : 리듬 감시자", "펄스 교란 주파수");
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "화면에 표시되는 간단한 리듬 패턴을", 50);
@@ -673,13 +674,13 @@ void StartSequence_Stage4() {
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
     SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
-    PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "이 있습니다.", 50);
+    PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록이 있습니다.", 50);
     SetColor(COLOR_BLACK, COLOR_YELLOW);
     PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
-    PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "를 모두 찾아내어", 50);
+    PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드를 모두 찾아내어", 50);
     PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
     Sleep(1600);
-
+    SetColor(COLOR_WHITE, COLOR_BLACK);
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
     SetColor(COLOR_WHITE, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "제한 기회 내에", 50);
@@ -1513,8 +1514,6 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
-
-
 
 
 
