@@ -671,10 +671,10 @@ void StartSequence_Stage4() {
     Sleep(1600);
 
     DrawLayout("STAGE 4 : 잔류 데이터", "허위 기록 구별");
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(10, ANSI_ITALIC_ON "이 곳에 나의 모든 기억", 50);
     PrintTypewriter(12, ANSI_ITALIC_ON ANSI_BOLD_ON "'제로 블록'의 진정한 기록" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "이 있습니다.", 50);
-    SetColor(COLOR_WHITE, COLOR_BLACK);
+    SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintTypewriter(14, ANSI_ITALIC_ON "진짜와 가짜는 쌍을 이룹니다.", 50);
     PrintTypewriter(16, ANSI_ITALIC_ON ANSI_BOLD_ON "짝이 맞는 카드" ANSI_RESET ANSI_ITALIC_ON ANSI_CYAN_ON "를 모두 찾아내어", 50);
     PrintTypewriter(18, ANSI_ITALIC_ON "나의 보조 기억체계를 붕괴시켜 보세요.", 50);
@@ -1512,6 +1512,7 @@ int PlayBossGame(int current_round) {
 
     return 1;
 }
+
 
 
 
