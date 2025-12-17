@@ -835,7 +835,7 @@ void Epilogue() {
 };
 
 int PlayCardGame() {
-    DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
+    DrawLayout("STAGE 4 : 잔류 데이터", "같은 숫자의 카드를 3쌍 찾으세요.");
 
     int cards[10] = { 1, 1, 2, 2, 3, 3, 4, 4, 5, 5 };
     int revealed[10] = { 0 }; // 1: 성공, 0: 숨김
@@ -984,7 +984,7 @@ int PlayRhythmGame() {
     }
 
 
-    DrawLayout("스테이지 2: 리듬 게임", "타이밍에 맞춰 키를 누르세요!");
+    DrawLayout("STAGE 3 : 리듬 감시자", "타이밍에 맞춰 키를 누르세요!");
     SetColor(COLOR_CYAN, COLOR_BLACK);
     PrintCenter(4, "키: [D] [F] [J] [K]");
 
@@ -1107,7 +1107,7 @@ int PlaySequenceGame() {
 
         // 정답을 틀리거나(ShowPopup에서 system("cls") 호출) 혹은 반복문의 첫 시작 시
         // 레이아웃과 힌트를 다시 그립니다.
-        DrawLayout("스테이지 3: 논리 퍼즐", "힌트를 분석하여 순서를 찾으세요.");
+        DrawLayout("STAGE 1: 통제 회로", "힌트를 분석하여 순서를 찾으세요.");
         Gotoxy(5, startY - 2); printf("[ 힌트 ]");
 
         for (int k = 0; k < 5; k++) {
@@ -1155,7 +1155,7 @@ int PlayMemoryGame() {
         int length = round_lengths[round];
         for (int i = 0; i < length; i++) sequence[i] = rand() % 10;
 
-        char title[50]; sprintf(title, "스테이지 4: 기억력 (라운드 %d)", round + 1);
+        char title[50]; sprintf(title, "STAGE 2 : 기억의 홀 (라운드 %d)", round + 1);
 
         for (int i = 0; i < length; i++) {
             DrawLayout(title, "숫자를 기억하세요 (2초 간격으로 나타납니다)");
@@ -1386,7 +1386,7 @@ int PlayBossGame(int current_round) {
     // UI 출력
     b_set_color(COLOR_GREEN, COLOR_BLACK);
     Gotoxy(2, 1); printf("[ ESC 시스템 ]");
-    PrintCenter(2, "스테이지 5: 최종 보스전");
+    PrintCenter(2, "STAGE 5: 자유의 터널");
     SetColor(COLOR_YELLOW, COLOR_BLACK);
     PrintCenter(3, "3개의 아이템을 모두 모으고 다음 라운드로 가세요!");
     b_set_color(COLOR_GREEN, COLOR_BLACK);
@@ -1658,6 +1658,7 @@ int ESCape(void) {
 
     return 0;
 }
+
 
 
 
