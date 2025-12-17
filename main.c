@@ -924,7 +924,7 @@ int PlayCardGame() {
             ShowPopup("성공!", "짝을 찾았습니다.");
 
             // 팝업 후 화면 복구
-            DrawLayout("스테이지 1: 카드 짝 맞추기", "같은 숫자의 카드를 3쌍 찾으세요.");
+            DrawLayout("STAGE 4 : 잔류 데이터", "같은 숫자의 카드를 3쌍 찾으세요.");
             sprintf(buf, "남은 기회: %d | 찾은 쌍: %d/3", tries, matches);
             UpdateStatusBar(buf, "번호 2개를 입력하세요 (1-9,0)");
 
@@ -1658,6 +1658,7 @@ int ESCape(void) {
 
     return 0;
 }
+
 
 
 
