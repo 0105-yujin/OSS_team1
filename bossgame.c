@@ -38,7 +38,7 @@ void Gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-// ✔ 2개 인자 색상 함수
+//  2개 인자 색상 함수
 void b_set_color(int textColor, int bgColor) {
     int color = textColor + (bgColor * 16);
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
@@ -120,7 +120,7 @@ int PlayBossGame() {
     ci.bVisible = FALSE;
     SetConsoleCursorInfo(out, &ci);
 
-    // 💡 시작 시 기본 텍스트 색상을 밝은 흰색으로 설정
+    //  시작 시 기본 텍스트 색상을 밝은 흰색으로 설정
     b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR);
 
 restart_round:
@@ -144,7 +144,7 @@ restart_round:
     b_set_cursor(ex, ey); printf("%s", B_ENEMY_CHAR);
     b_set_color(COLOR_DEFAULT_TEXT, BG_COLOR); // 기본 색상으로 복구
 
-    // 💡 상태 표시줄 (B_HEIGHT - 1) 강조
+    //  상태 표시줄 (B_HEIGHT - 1) 강조
     b_set_cursor(0, B_HEIGHT - 1);
     printf("Round %d 시작! 보스 속도: %.2fx", round, (1000.0 / baseSpeed));
 
