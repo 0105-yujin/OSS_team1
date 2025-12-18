@@ -1291,9 +1291,7 @@ void b_reset_items(BItem items[], int count, BWall walls[], int wallCount, int p
 }
 
 
-// ===============================
-// ★ 추가됨 : b_reset_walls 함수 완전체
-// ===============================
+
 void b_reset_walls(BWall walls[], int count, int px, int py, int ex, int ey, BItem items[], int itemCount)
 {
     for (int i = 0; i < count; i++)
@@ -1337,12 +1335,7 @@ void b_reset_walls(BWall walls[], int count, int px, int py, int ex, int ey, BIt
         walls[i].y = y;
     }
 }
-// ===============================
-// ★ 추가 끝
-// ===============================
 
-
-// 💡 메인 함수에서 라운드 번호와 속도를 관리하도록 인자를 추가했습니다.
 int PlayBossGame(int current_round) {
     int px, py, ex, ey;
     int ch;
@@ -1376,7 +1369,7 @@ int PlayBossGame(int current_round) {
     ex = 70; ey = 20;
     score = 0;
 
-    // ★ 여기서 오류났던 b_reset_walls가 이제 존재함!
+    
     b_reset_walls(walls, wallCount, px, py, ex, ey, items, 3);
     b_reset_items(items, 3, walls, wallCount, px, py, ex, ey);
 
@@ -1658,6 +1651,7 @@ int ESCape(void) {
 
     return 0;
 }
+
 
 
 
